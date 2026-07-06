@@ -1,0 +1,2044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lease Catalyst — Audit Workspace</title>
+<style>
+  :root{
+    --navy-950: #0c1420;
+    --navy-900: #101a2b;
+    --navy-800: #16233a;
+    --navy-700: #1d2e4a;
+    --navy-600: #2a3f60;
+    --navy-500: #3c5276;
+    --slate-200: #dde3ec;
+    --slate-300: #c2cad9;
+    --slate-400: #94a1ba;
+    --slate-500: #6c7993;
+    --paper: #f6f7fa;
+    --paper-card: #ffffff;
+    --line: #e3e7ee;
+    --line-strong: #ccd3e0;
+    --ink: #16203a;
+    --ink-soft: #4a546b;
+    --teal: #0e7c7b;
+    --teal-deep: #0a5f5f;
+    --amber: #b8741a;
+    --amber-bg: #fdf3e3;
+    --red: #b13a3a;
+    --red-bg: #fbeaea;
+    --green: #2f7d4f;
+    --green-bg: #e9f5ee;
+    --gold: #a3792f;
+    --focus: #1d6fd6;
+    --radius: 6px;
+    --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+    --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:13.5px;
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:#bcd6f7; }
+
+  button{font-family:inherit;}
+  *:focus-visible{ outline:2px solid var(--focus); outline-offset:1px; }
+
+  /* ====== APP SHELL ====== */
+  .app{
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+    min-width:320px;
+  }
+
+  /* ====== HEADER ====== */
+  .header{
+    background:var(--navy-950);
+    color:var(--slate-200);
+    border-bottom:1px solid var(--navy-700);
+    flex:0 0 auto;
+  }
+  .header-top{
+    display:flex;
+    align-items:center;
+    gap:24px;
+    padding:10px 18px;
+    border-bottom:1px solid var(--navy-800);
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:15px;
+    color:#fff;
+    letter-spacing:0.2px;
+    white-space:nowrap;
+  }
+  .brand .mark{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:20px;height:20px;
+    border-radius:4px;
+    background:linear-gradient(135deg, var(--teal), var(--teal-deep));
+    font-size:11px;
+    font-family:var(--mono);
+    color:#fff;
+    font-weight:700;
+  }
+  .brand .sub{
+    font-family:var(--sans);
+    font-weight:500;
+    font-size:11px;
+    color:var(--slate-400);
+    border-left:1px solid var(--navy-600);
+    padding-left:8px;
+  }
+
+  .header-fields{
+    display:flex;
+    align-items:center;
+    gap:0;
+    flex:1;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .header-fields::-webkit-scrollbar{display:none;}
+  .field{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    padding:0 16px;
+    border-right:1px solid var(--navy-800);
+    white-space:nowrap;
+  }
+  .field:first-child{padding-left:0;}
+  .field-label{
+    font-size:9.5px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--slate-500);
+    font-weight:600;
+  }
+  .field-value{
+    font-size:13px;
+    color:var(--slate-200);
+    font-weight:500;
+  }
+  .field-value.mono{font-family:var(--mono); font-size:12px;}
+
+  .status-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:3px 10px 3px 8px;
+    border-radius:100px;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:0.02em;
+  }
+  .status-pill .dot{ width:6px;height:6px;border-radius:50%; }
+  .status-pill.in-review{ background:rgba(184,116,26,0.18); color:#e3a554; }
+  .status-pill.in-review .dot{ background:#e3a554; }
+  .status-pill.draft{ background:rgba(108,121,147,0.22); color:var(--slate-300); }
+  .status-pill.draft .dot{ background:var(--slate-400); }
+  .status-pill.approved{ background:rgba(47,125,79,0.2); color:#5cb583; }
+  .status-pill.approved .dot{ background:#5cb583; }
+
+  .header-actions{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:0 18px;
+  }
+
+  .btn{
+    appearance:none;
+    border:1px solid transparent;
+    border-radius:5px;
+    font-size:12px;
+    font-weight:600;
+    padding:7px 13px;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    transition:background .12s ease, border-color .12s ease, color .12s ease, transform .04s ease;
+    line-height:1;
+    white-space:nowrap;
+  }
+  .btn:active{ transform:translateY(1px); }
+  .btn svg{ width:13px; height:13px; flex:0 0 auto; }
+
+  .btn-ghost-dark{
+    background:transparent;
+    border-color:var(--navy-600);
+    color:var(--slate-300);
+  }
+  .btn-ghost-dark:hover{ background:var(--navy-800); color:#fff; border-color:var(--navy-500); }
+
+  .btn-primary{ background:var(--teal); color:#fff; }
+  .btn-primary:hover{ background:var(--teal-deep); }
+
+  .btn-approve{ background:var(--green); color:#fff; }
+  .btn-approve:hover{ background:#256a42; }
+
+  .btn-reject{ background:transparent; border-color:var(--red); color:#e88989; }
+  .btn-reject:hover{ background:rgba(177,58,58,0.15); }
+
+  .btn-sm{ padding:5px 10px; font-size:11.5px; }
+  .btn-xs{ padding:3px 8px; font-size:11px; border-radius:4px; }
+
+  .icon-btn{
+    width:30px;height:30px;
+    display:inline-flex;align-items:center;justify-content:center;
+    border-radius:5px;
+    border:1px solid var(--navy-600);
+    background:transparent;
+    color:var(--slate-300);
+    cursor:pointer;
+  }
+  .icon-btn:hover{ background:var(--navy-800); color:#fff; }
+  .icon-btn svg{ width:14px;height:14px; }
+
+  .header-meta-row{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:7px 18px;
+    font-size:11.5px;
+    color:var(--slate-500);
+  }
+  .breadcrumb{ display:flex; align-items:center; gap:6px; }
+  .breadcrumb a{ color:var(--slate-400); text-decoration:none; }
+  .breadcrumb a:hover{ color:var(--slate-200); text-decoration:underline; }
+  .breadcrumb .sep{ color:var(--navy-600); }
+  .autosave-indicator{
+    margin-left:auto;
+    display:flex;align-items:center;gap:6px;
+    font-size:11px;
+    color:var(--slate-500);
+  }
+  .autosave-indicator .dot{
+    width:5px;height:5px;border-radius:50%;
+    background:#5cb583;
+  }
+
+  /* ====== MAIN LAYOUT ====== */
+  .main{
+    flex:1 1 auto;
+    display:flex;
+    overflow:hidden;
+    min-height:0;
+  }
+
+  /* ---- LEFT PANEL ---- */
+  .panel-left{
+    flex:0 0 35%;
+    max-width:35%;
+    display:flex;
+    flex-direction:column;
+    background:var(--navy-900);
+    border-right:1px solid var(--line-strong);
+    min-width:280px;
+  }
+  @media (max-width: 980px){
+    .panel-left{ display:none; }
+  }
+
+  .panel-left-tabs{
+    display:flex;
+    background:var(--navy-950);
+    border-bottom:1px solid var(--navy-700);
+    flex:0 0 auto;
+  }
+  .pl-tab{
+    flex:1;
+    text-align:center;
+    padding:9px 6px;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    color:var(--slate-500);
+    background:transparent;
+    border:none;
+    border-bottom:2px solid transparent;
+    cursor:pointer;
+  }
+  .pl-tab.active{ color:#fff; border-bottom-color:var(--teal); background:var(--navy-900); }
+  .pl-tab:hover:not(.active){ color:var(--slate-300); }
+
+  .doc-toolbar{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    padding:7px 10px;
+    background:var(--navy-900);
+    border-bottom:1px solid var(--navy-800);
+    flex:0 0 auto;
+  }
+  .doc-toolbar .sep{ width:1px; height:18px; background:var(--navy-700); margin:0 4px; }
+  .doc-search{
+    flex:1;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:var(--navy-800);
+    border:1px solid var(--navy-600);
+    border-radius:5px;
+    padding:4px 8px;
+    margin-left:4px;
+  }
+  .doc-search svg{ width:12px;height:12px; color:var(--slate-500); flex:0 0 auto; }
+  .doc-search input{
+    background:transparent;
+    border:none;
+    color:var(--slate-200);
+    font-size:11.5px;
+    outline:none;
+    width:100%;
+  }
+  .doc-search input::placeholder{ color:var(--slate-500); }
+  .page-indicator{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--slate-400);
+    padding:0 6px;
+    white-space:nowrap;
+  }
+
+  .doc-viewport{
+    flex:1 1 auto;
+    overflow-y:auto;
+    background:var(--navy-800);
+    padding:18px 14px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+  }
+  .doc-page{
+    background:#fdfcf8;
+    width:100%;
+    max-width:420px;
+    aspect-ratio:8.5/11;
+    border-radius:2px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.35);
+    padding:26px 24px;
+    color:#2b2620;
+    font-family:var(--serif);
+    font-size:10.5px;
+    line-height:1.65;
+    position:relative;
+  }
+  .doc-page .doc-title{
+    font-size:13px;
+    font-weight:700;
+    text-align:center;
+    margin-bottom:14px;
+    letter-spacing:0.03em;
+  }
+  .doc-page p{ margin:0 0 9px; }
+  .doc-page .clause-hl{
+    background:#ffe49a;
+    box-shadow:0 0 0 3px #ffe49a;
+    border-radius:2px;
+    transition:background .3s ease;
+  }
+  .doc-page .pagenum{
+    position:absolute;
+    bottom:10px; right:16px;
+    font-size:9px;
+    color:#8a8270;
+  }
+
+  .clause-strip{
+    flex:0 0 auto;
+    border-top:1px solid var(--navy-700);
+    background:var(--navy-900);
+    max-height:46%;
+    display:flex;
+    flex-direction:column;
+  }
+  .clause-strip-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:9px 12px 6px;
+    flex:0 0 auto;
+  }
+  .clause-strip-head h3{
+    margin:0;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.07em;
+    color:var(--slate-400);
+    font-weight:700;
+  }
+  .clause-count{
+    font-size:10.5px;
+    color:var(--slate-500);
+    font-family:var(--mono);
+  }
+  .clause-list{
+    overflow-y:auto;
+    padding:0 10px 10px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .clause-card{
+    background:var(--navy-800);
+    border:1px solid var(--navy-700);
+    border-radius:5px;
+    padding:9px 10px;
+    cursor:pointer;
+    transition:border-color .12s ease, background .12s ease;
+  }
+  .clause-card:hover{ border-color:var(--navy-500); }
+  .clause-card.active{
+    border-color:var(--teal);
+    background:rgba(14,124,123,0.12);
+  }
+  .clause-card-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:8px;
+    margin-bottom:4px;
+  }
+  .clause-card-title{
+    font-size:12px;
+    font-weight:600;
+    color:var(--slate-200);
+  }
+  .confidence-chip{
+    flex:0 0 auto;
+    font-family:var(--mono);
+    font-size:9.5px;
+    padding:2px 6px;
+    border-radius:3px;
+    font-weight:600;
+    white-space:nowrap;
+  }
+  .confidence-chip.high{ background:rgba(47,125,79,0.2); color:#5cb583; }
+  .confidence-chip.med{ background:rgba(184,116,26,0.2); color:#e3a554; }
+  .confidence-chip.low{ background:rgba(177,58,58,0.2); color:#e07f7f; }
+  .clause-card-text{
+    font-size:11.5px;
+    color:var(--slate-400);
+    line-height:1.5;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .clause-card-meta{
+    margin-top:6px;
+    display:flex;
+    gap:10px;
+    font-size:10px;
+    color:var(--slate-500);
+    font-family:var(--mono);
+  }
+
+  /* ---- RIGHT PANEL ---- */
+  .panel-right{
+    flex:1 1 65%;
+    display:flex;
+    flex-direction:column;
+    overflow-y:auto;
+    background:var(--paper);
+  }
+
+  .right-inner{
+    padding:18px 22px 60px;
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+    max-width:1180px;
+  }
+
+  /* Summary cards */
+  .summary-grid{
+    display:grid;
+    grid-template-columns:repeat(6, 1fr);
+    gap:10px;
+  }
+  @media (max-width: 1400px){ .summary-grid{ grid-template-columns:repeat(3, 1fr); } }
+  @media (max-width: 700px){ .summary-grid{ grid-template-columns:repeat(2, 1fr); } }
+
+  .scard{
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:12px 13px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    position:relative;
+    overflow:hidden;
+  }
+  .scard::before{
+    content:"";
+    position:absolute; top:0; left:0; right:0; height:3px;
+    background:var(--line-strong);
+  }
+  .scard.tone-teal::before{ background:var(--teal); }
+  .scard.tone-amber::before{ background:var(--amber); }
+  .scard.tone-red::before{ background:var(--red); }
+  .scard.tone-green::before{ background:var(--green); }
+
+  .scard-label{
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--slate-500);
+    font-weight:700;
+  }
+  .scard-value{
+    font-family:var(--mono);
+    font-size:19px;
+    font-weight:600;
+    color:var(--ink);
+    letter-spacing:-0.01em;
+  }
+  .scard-value.tone-red{ color:var(--red); }
+  .scard-value.tone-amber{ color:var(--amber); }
+  .scard-value.tone-green{ color:var(--green); }
+  .scard-sub{
+    font-size:10.5px;
+    color:var(--ink-soft);
+    display:flex;
+    align-items:center;
+    gap:4px;
+  }
+  .scard-progress{
+    height:5px;
+    border-radius:3px;
+    background:var(--line);
+    overflow:hidden;
+    margin-top:2px;
+  }
+  .scard-progress-fill{
+    height:100%;
+    background:linear-gradient(90deg, var(--teal), #14a09e);
+    border-radius:3px;
+  }
+
+  /* Section shell */
+  .section{
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+  }
+  .section-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:13px 16px;
+    border-bottom:1px solid var(--line);
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .section-head h2{
+    margin:0;
+    font-family:var(--serif);
+    font-size:15px;
+    font-weight:600;
+    color:var(--ink);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .section-head .count-badge{
+    font-family:var(--mono);
+    font-size:11px;
+    background:var(--navy-900);
+    color:#fff;
+    padding:1px 7px;
+    border-radius:100px;
+    font-weight:600;
+  }
+  .section-head .count-badge.amber{ background:var(--amber); }
+  .section-head-tools{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .filter-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    background:var(--paper);
+    border:1px solid var(--line-strong);
+    border-radius:100px;
+    padding:4px 10px 4px 8px;
+    font-size:11px;
+    font-weight:600;
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .filter-pill svg{ width:11px; height:11px; }
+  .filter-pill:hover{ border-color:var(--slate-500); }
+
+  .search-box{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    border:1px solid var(--line-strong);
+    border-radius:5px;
+    padding:5px 9px;
+    background:var(--paper);
+  }
+  .search-box svg{ width:12px;height:12px; color:var(--slate-500); }
+  .search-box input{
+    border:none; background:transparent; outline:none;
+    font-size:12px; width:130px; color:var(--ink);
+  }
+
+  /* ===== CAM Grid ===== */
+  .grid-scroll{ overflow-x:auto; }
+  table.cam-table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:1080px;
+    font-size:12.5px;
+  }
+  .cam-table thead th{
+    text-align:left;
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--slate-500);
+    font-weight:700;
+    padding:9px 12px;
+    background:var(--paper);
+    border-bottom:1px solid var(--line-strong);
+    white-space:nowrap;
+    position:sticky;
+    top:0;
+  }
+  .cam-table thead th.num{ text-align:right; }
+  .cam-table tbody td{
+    padding:10px 12px;
+    border-bottom:1px solid var(--line);
+    vertical-align:middle;
+    color:var(--ink);
+  }
+  .cam-table tbody td.num{ text-align:right; font-family:var(--mono); font-variant-numeric:tabular-nums; }
+  .row-main{ cursor:pointer; transition:background .1s ease; }
+  .row-main:hover{ background:#f7fafc; }
+  .row-main.expanded{ background:#f2f7f9; }
+  .row-main.fail{ box-shadow:inset 3px 0 0 var(--red); }
+  .row-main.warn{ box-shadow:inset 3px 0 0 var(--amber); }
+  .row-main.pass{ box-shadow:inset 3px 0 0 var(--green); }
+
+  .expand-toggle{
+    width:18px;height:18px;
+    display:inline-flex;align-items:center;justify-content:center;
+    border-radius:4px;
+    color:var(--slate-500);
+    transition:transform .15s ease;
+    flex:0 0 auto;
+  }
+  .row-main.expanded .expand-toggle{ transform:rotate(90deg); color:var(--ink); }
+
+  .cat-cell{ display:flex; align-items:center; gap:8px; }
+  .cat-name{ font-weight:600; }
+  .clause-link{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    color:var(--teal-deep);
+    font-size:11.5px;
+    font-weight:600;
+    text-decoration:none;
+    cursor:pointer;
+  }
+  .clause-link:hover{ text-decoration:underline; }
+  .clause-link svg{ width:10px;height:10px; }
+
+  .variance-cell{ display:flex; align-items:center; justify-content:flex-end; gap:5px; }
+  .variance-pos{ color:var(--red); }
+  .variance-neg{ color:var(--green); }
+  .variance-zero{ color:var(--ink-soft); }
+
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    padding:3px 8px;
+    border-radius:100px;
+    font-size:10.5px;
+    font-weight:700;
+    letter-spacing:0.02em;
+    white-space:nowrap;
+  }
+  .badge svg{ width:9px;height:9px; }
+  .badge.pass{ background:var(--green-bg); color:var(--green); }
+  .badge.warn{ background:var(--amber-bg); color:var(--amber); }
+  .badge.fail{ background:var(--red-bg); color:var(--red); }
+
+  .comment-stub{
+    font-size:11.5px;
+    color:var(--ink-soft);
+    font-style:italic;
+    max-width:160px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .comment-stub.empty{ color:var(--slate-400); font-style:normal; }
+
+  /* Expanded detail row */
+  .row-detail td{
+    padding:0;
+    border-bottom:1px solid var(--line);
+    background:#f9fafb;
+  }
+  .detail-inner{
+    padding:16px 18px 20px 44px;
+    display:grid;
+    grid-template-columns:1.1fr 1fr;
+    gap:18px;
+  }
+  .detail-block h4{
+    margin:0 0 8px;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--slate-500);
+    font-weight:700;
+  }
+  .calc-steps{
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:5px;
+    padding:10px 12px;
+    font-family:var(--mono);
+    font-size:11.5px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .calc-step{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    padding:4px 0;
+    border-bottom:1px dashed var(--line);
+  }
+  .calc-step:last-child{ border-bottom:none; font-weight:700; }
+  .calc-step .label{ color:var(--ink-soft); }
+  .calc-step .val{ color:var(--ink); }
+
+  .source-line{
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:5px;
+    padding:10px 12px;
+    font-size:11.5px;
+    line-height:1.6;
+    color:var(--ink-soft);
+  }
+  .source-line .clause-link{ display:inline-flex; margin-top:6px; }
+
+  .history-list{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .history-item{
+    display:flex;
+    gap:9px;
+    font-size:11.5px;
+  }
+  .history-dot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--slate-400);
+    margin-top:4px;
+    flex:0 0 auto;
+  }
+  .history-item.action-fail .history-dot{ background:var(--red); }
+  .history-item.action-pass .history-dot{ background:var(--green); }
+  .history-text strong{ color:var(--ink); }
+  .history-time{ color:var(--slate-500); font-size:10.5px; }
+
+  .row-comment-box{
+    grid-column:1 / -1;
+    display:flex;
+    gap:8px;
+    align-items:flex-start;
+    margin-top:2px;
+  }
+  .row-comment-box textarea{
+    flex:1;
+    border:1px solid var(--line-strong);
+    border-radius:5px;
+    padding:8px 10px;
+    font-family:inherit;
+    font-size:12px;
+    resize:vertical;
+    min-height:34px;
+    background:var(--paper-card);
+  }
+  .row-comment-box textarea:focus{ border-color:var(--focus); }
+
+  /* ===== Exceptions ===== */
+  .exception-card{
+    border-bottom:1px solid var(--line);
+    padding:13px 16px;
+    display:grid;
+    grid-template-columns:auto 1fr auto;
+    gap:14px;
+    align-items:start;
+  }
+  .exception-card:last-child{ border-bottom:none; }
+  .severity-tag{
+    width:6px;
+    align-self:stretch;
+    border-radius:3px;
+  }
+  .severity-tag.high{ background:var(--red); }
+  .severity-tag.medium{ background:var(--amber); }
+  .severity-tag.low{ background:var(--slate-400); }
+
+  .exception-main{ min-width:0; }
+  .exception-top{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:4px;
+    flex-wrap:wrap;
+  }
+  .exception-cat{ font-weight:700; font-size:13px; }
+  .sev-chip{
+    font-size:9.5px;
+    text-transform:uppercase;
+    font-weight:700;
+    letter-spacing:0.05em;
+    padding:2px 7px;
+    border-radius:3px;
+  }
+  .sev-chip.high{ background:var(--red-bg); color:var(--red); }
+  .sev-chip.medium{ background:var(--amber-bg); color:var(--amber); }
+  .sev-chip.low{ background:var(--line); color:var(--ink-soft); }
+  .exception-issue{ font-size:12.5px; color:var(--ink); margin-bottom:6px; }
+  .exception-meta{
+    display:flex; gap:16px; flex-wrap:wrap;
+    font-size:11.5px; color:var(--ink-soft);
+  }
+  .exception-meta .meta-item{ display:flex; gap:5px; align-items:center; }
+  .exception-meta strong{ color:var(--ink); font-family:var(--mono); }
+  .recommendation{
+    margin-top:8px;
+    background:#f4f8f7;
+    border-left:3px solid var(--teal);
+    padding:7px 10px;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    border-radius:0 4px 4px 0;
+  }
+  .recommendation strong{ color:var(--teal-deep); }
+
+  .exception-actions{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    align-self:center;
+  }
+  .ex-btn{
+    border-radius:4px;
+    border:1px solid var(--line-strong);
+    background:var(--paper-card);
+    padding:5px 11px;
+    font-size:11px;
+    font-weight:600;
+    cursor:pointer;
+    white-space:nowrap;
+    color:var(--ink);
+    display:flex;align-items:center;gap:5px;
+  }
+  .ex-btn:hover{ border-color:var(--slate-500); }
+  .ex-btn.accept:hover{ background:var(--green-bg); border-color:var(--green); color:var(--green); }
+  .ex-btn.override:hover{ background:var(--amber-bg); border-color:var(--amber); color:var(--amber); }
+  .ex-btn.reject:hover{ background:var(--red-bg); border-color:var(--red); color:var(--red); }
+  .ex-btn.resolved{ background:var(--green-bg); border-color:var(--green); color:var(--green); cursor:default; }
+
+  /* ===== Comments ===== */
+  .comments-list{
+    display:flex;
+    flex-direction:column;
+    gap:0;
+    padding:4px 16px;
+  }
+  .comment-item{
+    display:flex;
+    gap:11px;
+    padding:13px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .comment-item:last-child{ border-bottom:none; }
+  .avatar{
+    width:30px;height:30px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;
+    font-weight:700;
+    color:#fff;
+    flex:0 0 auto;
+  }
+  .comment-body{ flex:1; min-width:0; }
+  .comment-head{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    margin-bottom:3px;
+    flex-wrap:wrap;
+  }
+  .comment-author{ font-weight:700; font-size:12.5px; color:var(--ink); }
+  .role-chip{
+    font-size:9.5px;
+    text-transform:uppercase;
+    font-weight:700;
+    color:var(--slate-500);
+    background:var(--paper);
+    border:1px solid var(--line);
+    padding:1px 6px;
+    border-radius:3px;
+  }
+  .comment-time{ font-size:11px; color:var(--slate-500); margin-left:auto; }
+  .comment-text{ font-size:12.5px; color:var(--ink-soft); line-height:1.55; }
+  .comment-text .mention{ color:var(--teal-deep); font-weight:600; }
+  .comment-text .ref-chip{
+    display:inline-flex; align-items:center; gap:3px;
+    background:var(--paper); border:1px solid var(--line-strong);
+    border-radius:4px; padding:1px 7px; font-size:11px; font-family:var(--mono);
+    color:var(--ink); margin:0 2px;
+  }
+  .comment-attachment{
+    display:inline-flex; align-items:center; gap:6px;
+    margin-top:7px;
+    background:var(--paper);
+    border:1px solid var(--line-strong);
+    border-radius:5px;
+    padding:6px 10px;
+    font-size:11.5px;
+    color:var(--ink-soft);
+  }
+  .comment-attachment svg{ width:13px;height:13px; color:var(--slate-500); }
+
+  .comment-compose{
+    display:flex;
+    gap:11px;
+    padding:14px 16px 16px;
+    border-top:1px solid var(--line);
+    background:var(--paper);
+  }
+  .compose-input-wrap{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .compose-input-wrap textarea{
+    border:1px solid var(--line-strong);
+    border-radius:6px;
+    padding:9px 11px;
+    font-family:inherit;
+    font-size:12.5px;
+    resize:vertical;
+    min-height:54px;
+    background:var(--paper-card);
+  }
+  .compose-input-wrap textarea:focus{ border-color:var(--focus); }
+  .compose-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .compose-tools{ display:flex; gap:6px; }
+  .tool-chip{
+    display:flex; align-items:center; gap:5px;
+    border:1px solid var(--line-strong);
+    background:var(--paper-card);
+    border-radius:5px;
+    padding:5px 9px;
+    font-size:11px;
+    font-weight:600;
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .tool-chip:hover{ border-color:var(--slate-500); }
+  .tool-chip svg{ width:12px;height:12px; }
+
+  /* ===== Approval panel ===== */
+  .approval-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:0;
+  }
+  @media (max-width: 900px){ .approval-grid{ grid-template-columns:1fr; } }
+  .approval-col{ padding:16px; }
+  .approval-col + .approval-col{ border-left:1px solid var(--line); }
+  @media (max-width: 900px){ .approval-col + .approval-col{ border-left:none; border-top:1px solid var(--line); } }
+
+  .reviewer-card{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:11px 13px;
+    margin-bottom:14px;
+  }
+  .reviewer-info{ flex:1; }
+  .reviewer-name{ font-weight:700; font-size:13px; color:var(--ink); }
+  .reviewer-role{ font-size:11px; color:var(--slate-500); }
+  .reviewer-status{
+    font-size:10.5px;
+    font-weight:700;
+    padding:3px 9px;
+    border-radius:100px;
+    background:var(--amber-bg);
+    color:var(--amber);
+  }
+
+  .approval-actions{
+    display:flex;
+    gap:8px;
+    margin-top:4px;
+    flex-wrap:wrap;
+  }
+
+  .timeline{
+    display:flex;
+    flex-direction:column;
+    gap:0;
+  }
+  .timeline-item{
+    display:flex;
+    gap:11px;
+    padding-bottom:16px;
+    position:relative;
+  }
+  .timeline-item::before{
+    content:"";
+    position:absolute;
+    left:9px; top:20px; bottom:0;
+    width:1px;
+    background:var(--line-strong);
+  }
+  .timeline-item:last-child::before{ display:none; }
+  .timeline-marker{
+    width:19px;height:19px;
+    border-radius:50%;
+    flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--paper-card);
+    border:2px solid var(--line-strong);
+    z-index:1;
+  }
+  .timeline-marker.done{ border-color:var(--green); background:var(--green-bg); }
+  .timeline-marker.current{ border-color:var(--amber); background:var(--amber-bg); }
+  .timeline-marker svg{ width:9px;height:9px; }
+  .timeline-marker.done svg{ color:var(--green); }
+  .timeline-marker.current svg{ color:var(--amber); }
+  .timeline-content{ padding-top:1px; }
+  .timeline-title{ font-size:12.5px; font-weight:700; color:var(--ink); }
+  .timeline-sub{ font-size:11px; color:var(--slate-500); margin-top:1px; }
+
+  /* Scrollbars */
+  .doc-viewport::-webkit-scrollbar, .clause-list::-webkit-scrollbar, .panel-right::-webkit-scrollbar { width:9px; }
+  .doc-viewport::-webkit-scrollbar-thumb, .clause-list::-webkit-scrollbar-thumb { background:var(--navy-600); border-radius:5px; }
+  .panel-right::-webkit-scrollbar-thumb{ background:var(--line-strong); border-radius:5px; }
+  .doc-viewport::-webkit-scrollbar-track, .clause-list::-webkit-scrollbar-track, .panel-right::-webkit-scrollbar-track{ background:transparent; }
+
+  .toast{
+    position:fixed;
+    bottom:18px; left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--navy-950);
+    color:#fff;
+    padding:10px 18px;
+    border-radius:7px;
+    font-size:12.5px;
+    font-weight:600;
+    box-shadow:0 8px 24px rgba(0,0,0,0.25);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease, transform .2s ease;
+    z-index:200;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); pointer-events:auto; }
+  .toast svg{ width:14px;height:14px; color:#5cb583; }
+
+  .visually-hidden{
+    position:absolute; width:1px;height:1px;
+    overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition:none !important; animation:none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ HEADER ============ -->
+  <header class="header">
+    <div class="header-top">
+      <div class="brand">
+        <span class="mark">LC</span>
+        Lease Catalyst
+        <span class="sub">Audit Workspace</span>
+      </div>
+
+      <div class="header-fields">
+        <div class="field">
+          <span class="field-label">Property</span>
+          <span class="field-value">Riverstone Commons</span>
+        </div>
+        <div class="field">
+          <span class="field-label">Lease</span>
+          <span class="field-value mono">LS-22841</span>
+        </div>
+        <div class="field">
+          <span class="field-label">Tenant</span>
+          <span class="field-value">Meridian Outfitters LLC</span>
+        </div>
+        <div class="field">
+          <span class="field-label">Audit Year</span>
+          <span class="field-value mono">FY2025</span>
+        </div>
+        <div class="field">
+          <span class="field-label">Status</span>
+          <span class="status-pill in-review" id="auditStatusPill">
+            <span class="dot"></span>
+            In Review
+          </span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="icon-btn" title="Save" id="btnSave">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+        </button>
+        <button class="icon-btn" title="Refresh calculations" id="btnRefresh">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+        </button>
+        <span class="sep" style="width:1px;height:20px;background:var(--navy-600);"></span>
+        <button class="btn btn-approve btn-sm" id="btnApprove">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+          Approve
+        </button>
+        <button class="btn btn-reject btn-sm" id="btnReject">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          Reject
+        </button>
+        <button class="btn btn-ghost-dark btn-sm" id="btnExport">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Export
+        </button>
+        <button class="btn btn-ghost-dark btn-sm" id="btnExit">
+          Exit
+        </button>
+      </div>
+    </div>
+
+    <div class="header-meta-row">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="#">Dashboard</a><span class="sep">/</span>
+        <a href="#">Riverstone Commons</a><span class="sep">/</span>
+        <a href="#">LS-22841</a><span class="sep">/</span>
+        <span style="color:var(--slate-300);">FY2025 Audit</span>
+      </nav>
+      <span style="color:var(--navy-600);">·</span>
+      <span>Auditor: <strong style="color:var(--slate-300);">D. Okafor</strong></span>
+      <span class="autosave-indicator" id="autosaveIndicator">
+        <span class="dot"></span>
+        <span id="autosaveText">Saved just now</span>
+      </span>
+    </div>
+  </header>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+
+    <!-- ===== LEFT PANEL ===== -->
+    <aside class="panel-left">
+      <div class="panel-left-tabs">
+        <button class="pl-tab active" data-pltab="lease">Lease PDF</button>
+        <button class="pl-tab" data-pltab="cam">CAM Statement</button>
+        <button class="pl-tab" data-pltab="prior">Prior Year</button>
+      </div>
+
+      <div class="doc-toolbar">
+        <button class="icon-btn" title="Zoom out" style="width:26px;height:26px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35M8 11h6"/></svg>
+        </button>
+        <button class="icon-btn" title="Zoom in" style="width:26px;height:26px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35M11 8v6M8 11h6"/></svg>
+        </button>
+        <button class="icon-btn" title="Rotate page" style="width:26px;height:26px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+        </button>
+        <span class="sep"></span>
+        <button class="icon-btn" title="Bookmark this page" style="width:26px;height:26px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+        </button>
+        <div class="doc-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" placeholder="Search document text…" aria-label="Search document">
+        </div>
+        <span class="page-indicator">p. 14 / 38</span>
+      </div>
+
+      <div class="doc-viewport" id="docViewport">
+        <div class="doc-page" id="docPage1">
+          <div class="doc-title">LEASE AGREEMENT — ARTICLE 7</div>
+          <p>7.1 &nbsp;<strong>Common Area Maintenance Charges.</strong> Tenant shall pay its Proportionate Share of Common Area Maintenance ("CAM") expenses incurred by Landlord in the operation, management, and maintenance of the Common Areas of the Shopping Center.</p>
+          <p>7.2 &nbsp;<strong>Annual Cap on Controllable Expenses.</strong> <span class="clause-hl" id="hl-clause-2">Notwithstanding the foregoing, increases in Controllable Operating Expenses in any Lease Year shall not exceed five percent (5%) of the Controllable Operating Expenses for the immediately preceding Lease Year, calculated on a cumulative, compounding basis.</span></p>
+          <p>7.3 &nbsp;<strong>Exclusions from CAM.</strong> CAM expenses shall expressly exclude: (a) capital expenditures except as amortized in accordance with Section 7.5; (b) depreciation; (c) leasing commissions; (d) costs of correcting defects in original construction; and (e) management fees in excess of four percent (4%) of gross rents collected from the Shopping Center.</p>
+          <p>7.4 &nbsp;<strong>Reconciliation.</strong> Within one hundred twenty (120) days following the end of each calendar year, Landlord shall furnish Tenant a statement of actual CAM expenses for such year, together with Tenant's Proportionate Share thereof.</p>
+          <span class="pagenum">14</span>
+        </div>
+      </div>
+
+      <div class="clause-strip">
+        <div class="clause-strip-head">
+          <h3>Extracted Clauses</h3>
+          <span class="clause-count">6 found</span>
+        </div>
+        <div class="clause-list" id="clauseList">
+          <!-- populated by JS -->
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===== RIGHT PANEL ===== -->
+    <main class="panel-right">
+      <div class="right-inner">
+
+        <!-- Summary Cards -->
+        <section class="summary-grid" id="summaryCards" aria-label="Audit summary"></section>
+
+        <!-- CAM Calculation Grid -->
+        <section class="section" id="camGridSection">
+          <div class="section-head">
+            <h2>CAM Calculation Grid <span class="count-badge" id="camRowCount">11</span></h2>
+            <div class="section-head-tools">
+              <div class="search-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                <input type="text" placeholder="Filter categories…" id="camFilterInput">
+              </div>
+              <button class="filter-pill" id="camStatusFilter">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+                All statuses
+              </button>
+            </div>
+          </div>
+          <div class="grid-scroll">
+            <table class="cam-table">
+              <thead>
+                <tr>
+                  <th style="width:30px;"></th>
+                  <th>Expense Category</th>
+                  <th class="num">Current Yr Charge</th>
+                  <th class="num">Prior Yr Amount</th>
+                  <th>Lease Clause</th>
+                  <th>Cap Type</th>
+                  <th class="num">Cap Value</th>
+                  <th class="num">Allowed Amount</th>
+                  <th class="num">Variance</th>
+                  <th>Status</th>
+                  <th>Reviewer Comment</th>
+                </tr>
+              </thead>
+              <tbody id="camTableBody">
+                <!-- populated by JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Exceptions -->
+        <section class="section" id="exceptionsSection">
+          <div class="section-head">
+            <h2>Exceptions <span class="count-badge amber" id="exceptionCount">4</span></h2>
+            <div class="section-head-tools">
+              <button class="filter-pill" id="exSeverityFilter">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+                All severities
+              </button>
+            </div>
+          </div>
+          <div id="exceptionsList"></div>
+        </section>
+
+        <!-- Comments -->
+        <section class="section" id="commentsSection">
+          <div class="section-head">
+            <h2>Comments <span class="count-badge" id="commentCount">3</span></h2>
+            <div class="section-head-tools">
+              <button class="filter-pill">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+                All roles
+              </button>
+            </div>
+          </div>
+          <div class="comments-list" id="commentsList"></div>
+          <div class="comment-compose">
+            <div class="avatar" style="background:#3c5276;">DO</div>
+            <div class="compose-input-wrap">
+              <textarea id="newCommentText" placeholder="Add a comment… use @ to mention a reviewer"></textarea>
+              <div class="compose-toolbar">
+                <div class="compose-tools">
+                  <button class="tool-chip" id="btnMention">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M16 12v1.5a2.5 2.5 0 005 0V12a9 9 0 10-5.5 8.28"/></svg>
+                    Mention
+                  </button>
+                  <button class="tool-chip" id="btnAttach">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+                    Attach
+                  </button>
+                </div>
+                <button class="btn btn-primary btn-sm" id="btnPostComment">Post comment</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Approval -->
+        <section class="section" id="approvalSection">
+          <div class="section-head">
+            <h2>Approval</h2>
+          </div>
+          <div class="approval-grid">
+            <div class="approval-col">
+              <div class="reviewer-card">
+                <div class="avatar" style="background:#0e7c7b;">MK</div>
+                <div class="reviewer-info">
+                  <div class="reviewer-name">Maya Kessler</div>
+                  <div class="reviewer-role">Reviewer · assigned 2 days ago</div>
+                </div>
+                <span class="reviewer-status">Pending</span>
+              </div>
+              <div style="font-size:11.5px; color:var(--ink-soft); margin-bottom:12px;">
+                4 open exceptions are blocking sign-off. 2 high-severity items require resolution before this audit can advance to Manager Approval.
+              </div>
+              <div class="approval-actions">
+                <button class="btn btn-approve btn-sm">Approve</button>
+                <button class="btn btn-reject btn-sm">Reject</button>
+                <button class="btn btn-ghost-dark btn-sm" style="border-color:var(--line-strong); color:var(--ink-soft);">Request Changes</button>
+              </div>
+            </div>
+            <div class="approval-col">
+              <h4 style="margin:0 0 12px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--slate-500); font-weight:700;">Review History</h4>
+              <div class="timeline" id="approvalTimeline"></div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+  <span id="toastText">Saved</span>
+</div>
+
+<script>
+// ============================================================
+// LEASE CATALYST — AUDIT WORKSPACE
+// Mock data + interactivity. Per spec: frontend never performs
+// business calculations — all figures below simulate values that
+// would arrive pre-calculated from the backend calculation engine.
+// ============================================================
+
+const fmt = (n) => {
+  const neg = n < 0;
+  const v = Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  return (neg ? '−$' : '$') + v;
+};
+
+// ---------- CLAUSES ----------
+const clauses = [
+  { id: 'c1', title: '7.1 — CAM Charges (General)', text: 'Tenant shall pay its Proportionate Share of Common Area Maintenance expenses incurred by Landlord in the operation, management, and maintenance of the Common Areas.', page: 14, confidence: 0.97 },
+  { id: 'c2', title: '7.2 — Annual Cap on Controllable Expenses', text: 'Increases in Controllable Operating Expenses in any Lease Year shall not exceed five percent (5%) of the prior Lease Year, calculated on a cumulative, compounding basis.', page: 14, confidence: 0.95 },
+  { id: 'c3', title: '7.3 — Exclusions from CAM', text: 'CAM expenses shall expressly exclude capital expenditures except as amortized, depreciation, leasing commissions, and management fees in excess of four percent (4%) of gross rents collected.', page: 14, confidence: 0.93 },
+  { id: 'c4', title: '7.4 — Reconciliation Timing', text: 'Within one hundred twenty (120) days following year end, Landlord shall furnish Tenant a statement of actual CAM expenses and Tenant\u2019s Proportionate Share thereof.', page: 14, confidence: 0.91 },
+  { id: 'c5', title: '7.5 — Capital Expenditure Amortization', text: 'Permitted capital expenditures shall be amortized over their useful life, not to exceed ten (10) years, and included in CAM only to the extent of the annual amortized amount.', page: 15, confidence: 0.88 },
+  { id: 'c6', title: '7.6 — Insurance & Tax Pass-Through', text: 'Property insurance premiums and real estate taxes attributable to the Common Areas shall be included in CAM without application of the controllable expense cap.', page: 15, confidence: 0.62 },
+];
+
+// ---------- CAM CALCULATION ROWS ----------
+const camRows = [
+  {
+    id: 'r1', category: 'Landscaping & Grounds', current: 48200, prior: 45100, clauseId: 'c2', capType: 'Percentage (5%)', capValue: 47355, allowed: 47355, status: 'fail',
+    comment: 'Charge exceeds 5% controllable cap — flagged to vendor invoice review.',
+    steps: [
+      { label: 'Prior Year Amount', val: '$45,100' },
+      { label: 'Cap Rate Applied', val: '× 1.05' },
+      { label: 'Allowable Ceiling', val: '$47,355' },
+      { label: 'Current Year Charge', val: '$48,200' },
+      { label: 'Variance (Charge − Allowed)', val: '$845 over cap' },
+    ],
+    source: 'CAM Statement Line 4: "Landscaping & Grounds Maintenance — Contract #LG-2025-09" — Total billed $48,200.00 across 12 monthly invoices.',
+    history: [
+      { type:'fail', text: '<strong>Validation Engine</strong> flagged Cap Violation', time: 'Today, 9:14 AM' },
+      { type:'neutral', text: '<strong>D. Okafor</strong> opened row for review', time: 'Today, 9:20 AM' },
+    ],
+  },
+  {
+    id: 'r2', category: 'Snow & Ice Removal', current: 19800, prior: 21500, clauseId: 'c2', capType: 'Percentage (5%)', capValue: 22575, allowed: 19800, status: 'pass',
+    comment: '',
+    steps: [
+      { label: 'Prior Year Amount', val: '$21,500' },
+      { label: 'Cap Rate Applied', val: '× 1.05' },
+      { label: 'Allowable Ceiling', val: '$22,575' },
+      { label: 'Current Year Charge', val: '$19,800' },
+      { label: 'Variance (Charge − Allowed)', val: '$0 — within cap' },
+    ],
+    source: 'CAM Statement Line 7: "Snow & Ice Removal Services" — Total billed $19,800.00, mild winter season.',
+    history: [
+      { type:'pass', text: '<strong>Validation Engine</strong> passed — within controllable cap', time: 'Today, 9:14 AM' },
+    ],
+  },
+  {
+    id: 'r3', category: 'Management Fee', current: 31400, prior: 28900, clauseId: 'c3', capType: 'None (Excluded)', capValue: 0, allowed: 0, status: 'fail',
+    comment: 'Per 7.3, fees over 4% of gross rents are excluded entirely — this category nets to zero.',
+    steps: [
+      { label: 'Lease Provision', val: 'Excluded > 4% gross rents' },
+      { label: 'Gross Rents (Annual)', val: '$612,000' },
+      { label: '4% Threshold', val: '$24,480' },
+      { label: 'Current Year Charge', val: '$31,400' },
+      { label: 'Allowed Amount', val: '$0 — fully excluded' },
+      { label: 'Variance (Charge − Allowed)', val: '$31,400 over cap' },
+    ],
+    source: 'CAM Statement Line 1: "Property Management Fee — 5.1% of gross rents" — Total billed $31,400.00.',
+    history: [
+      { type:'fail', text: '<strong>Business Rule</strong> "Management Fee Exclusion" triggered', time: 'Today, 9:14 AM' },
+      { type:'fail', text: '<strong>Validation Engine</strong> generated High severity exception', time: 'Today, 9:14 AM' },
+    ],
+  },
+  {
+    id: 'r4', category: 'Parking Lot Repairs', current: 12600, prior: 0, clauseId: 'c5', capType: 'Amortized (10 yr)', capValue: 12600, allowed: 1260, status: 'warn',
+    comment: '',
+    steps: [
+      { label: 'Total Capital Cost', val: '$12,600' },
+      { label: 'Amortization Period', val: '10 years' },
+      { label: 'Allowable Annual Amount', val: '$1,260' },
+      { label: 'Current Year Charge', val: '$12,600 (billed in full)' },
+      { label: 'Variance (Charge − Allowed)', val: '$11,340 over cap' },
+    ],
+    source: 'CAM Statement Line 11: "Parking Lot Resurfacing — Capital Project #CP-114" — Full cost billed in single year.',
+    history: [
+      { type:'fail', text: '<strong>Validation Engine</strong> flagged Capital Expenditure not amortized', time: 'Today, 9:15 AM' },
+    ],
+  },
+  {
+    id: 'r5', category: 'Property Insurance', current: 22300, prior: 20100, clauseId: 'c6', capType: 'None (Pass-through)', capValue: null, allowed: 22300, status: 'pass',
+    comment: '',
+    steps: [
+      { label: 'Lease Provision', val: 'No cap — pass-through' },
+      { label: 'Current Year Charge', val: '$22,300' },
+      { label: 'Allowed Amount', val: '$22,300' },
+      { label: 'Variance', val: '$0' },
+    ],
+    source: 'CAM Statement Line 2: "Building & Liability Insurance Premium" — Total billed $22,300.00.',
+    history: [
+      { type:'pass', text: '<strong>Validation Engine</strong> passed — uncapped pass-through category', time: 'Today, 9:14 AM' },
+    ],
+  },
+  {
+    id: 'r6', category: 'Real Estate Taxes', current: 64500, prior: 61200, clauseId: 'c6', capType: 'None (Pass-through)', capValue: null, allowed: 64500, status: 'pass',
+    comment: '',
+    steps: [
+      { label: 'Lease Provision', val: 'No cap — pass-through' },
+      { label: 'Current Year Charge', val: '$64,500' },
+      { label: 'Allowed Amount', val: '$64,500' },
+      { label: 'Variance', val: '$0' },
+    ],
+    source: 'CAM Statement Line 3: "Real Estate Tax Allocation — County Parcel 0419-22" — Total billed $64,500.00.',
+    history: [
+      { type:'pass', text: '<strong>Validation Engine</strong> passed — uncapped pass-through category', time: 'Today, 9:14 AM' },
+    ],
+  },
+  {
+    id: 'r7', category: 'Janitorial Services', current: 17850, prior: 17000, clauseId: 'c2', capType: 'Percentage (5%)', capValue: 17850, allowed: 17850, status: 'pass',
+    comment: '',
+    steps: [
+      { label: 'Prior Year Amount', val: '$17,000' },
+      { label: 'Cap Rate Applied', val: '× 1.05' },
+      { label: 'Allowable Ceiling', val: '$17,850' },
+      { label: 'Current Year Charge', val: '$17,850' },
+      { label: 'Variance', val: '$0 — exactly at cap' },
+    ],
+    source: 'CAM Statement Line 5: "Common Area Janitorial Contract" — Total billed $17,850.00.',
+    history: [
+      { type:'pass', text: '<strong>Validation Engine</strong> passed — at allowable ceiling', time: 'Today, 9:14 AM' },
+    ],
+  },
+  {
+    id: 'r8', category: 'Security Services', current: 26900, prior: 24200, clauseId: 'c2', capType: 'Percentage (5%)', capValue: 25410, allowed: 25410, status: 'warn',
+    comment: 'Vendor invoice shows rate increase mid-year — requesting amended contract.',
+    steps: [
+      { label: 'Prior Year Amount', val: '$24,200' },
+      { label: 'Cap Rate Applied', val: '× 1.05' },
+      { label: 'Allowable Ceiling', val: '$25,410' },
+      { label: 'Current Year Charge', val: '$26,900' },
+      { label: 'Variance (Charge − Allowed)', val: '$1,490 over cap' },
+    ],
+    source: 'CAM Statement Line 6: "Common Area Security Patrol" — Total billed $26,900.00, rate change effective July 1.',
+    history: [
+      { type:'fail', text: '<strong>Validation Engine</strong> flagged Cap Violation (Medium)', time: 'Today, 9:15 AM' },
+      { type:'neutral', text: '<strong>D. Okafor</strong> added supporting comment', time: 'Today, 11:02 AM' },
+    ],
+  },
+  {
+    id: 'r9', category: 'Utilities — Common Area', current: 15200, prior: 14600, clauseId: 'c2', capType: 'Percentage (5%)', capValue: 15330, allowed: 15200, status: 'pass',
+    comment: '',
+    steps: [
+      { label: 'Prior Year Amount', val: '$14,600' },
+      { label: 'Cap Rate Applied', val: '× 1.05' },
+      { label: 'Allowable Ceiling', val: '$15,330' },
+      { label: 'Current Year Charge', val: '$15,200' },
+      { label: 'Variance', val: '$0 — within cap' },
+    ],
+    source: 'CAM Statement Line 8: "Common Area Electric & Water" — Total billed $15,200.00.',
+    history: [
+      { type:'pass', text: '<strong>Validation Engine</strong> passed — within controllable cap', time: 'Today, 9:14 AM' },
+    ],
+  },
+  {
+    id: 'r10', category: 'Pest Control', current: 4100, prior: 3950, clauseId: 'c2', capType: 'Percentage (5%)', capValue: 4148, allowed: 4100, status: 'pass',
+    comment: '',
+    steps: [
+      { label: 'Prior Year Amount', val: '$3,950' },
+      { label: 'Cap Rate Applied', val: '× 1.05' },
+      { label: 'Allowable Ceiling', val: '$4,148' },
+      { label: 'Current Year Charge', val: '$4,100' },
+      { label: 'Variance', val: '$0 — within cap' },
+    ],
+    source: 'CAM Statement Line 9: "Quarterly Pest Control Service" — Total billed $4,100.00.',
+    history: [
+      { type:'pass', text: '<strong>Validation Engine</strong> passed — within controllable cap', time: 'Today, 9:14 AM' },
+    ],
+  },
+  {
+    id: 'r11', category: 'Signage & Lighting Repairs', current: 6300, prior: null, clauseId: null, capType: 'Unclassified', capValue: null, allowed: null, status: 'fail',
+    comment: '',
+    steps: [
+      { label: 'Lease Clause Match', val: 'No clause found' },
+      { label: 'Prior Year Data', val: 'Not available' },
+      { label: 'Current Year Charge', val: '$6,300' },
+      { label: 'Allowed Amount', val: 'Cannot calculate' },
+    ],
+    source: 'CAM Statement Line 13: "Exterior Signage & Lighting Repairs" — no corresponding category mapping found in lease abstract.',
+    history: [
+      { type:'fail', text: '<strong>Validation Engine</strong> flagged Unknown Category + Missing Lease Clause', time: 'Today, 9:16 AM' },
+    ],
+  },
+];
+
+// ---------- EXCEPTIONS (derived from failed/warn rows) ----------
+const exceptions = [
+  {
+    id: 'e1', rowId: 'r3', category: 'Management Fee', severity: 'high',
+    issue: 'Management fee of $31,400 billed at 5.1% of gross rents — Lease Section 7.3 excludes fees exceeding 4% of gross rents entirely. Full amount disallowed.',
+    variance: 31400, clauseRef: '7.3 — Exclusions from CAM',
+    recommendation: 'Request landlord recalculate management fee at or below the 4% threshold ($24,480), or disallow the full $31,400 and reduce CAM billing accordingly.',
+    status: 'open',
+  },
+  {
+    id: 'e2', rowId: 'r4', category: 'Parking Lot Repairs', severity: 'high',
+    issue: 'Capital expenditure of $12,600 was billed in full rather than amortized over the 10-year useful life required by Section 7.5. Only $1,260 is allowable this year.',
+    variance: 11340, clauseRef: '7.5 — Capital Expenditure Amortization',
+    recommendation: 'Request landlord reissue the statement with the capital cost amortized, or apply a one-time adjustment crediting $11,340 to next year\u2019s reconciliation.',
+    status: 'open',
+  },
+  {
+    id: 'e3', rowId: 'r8', category: 'Security Services', severity: 'medium',
+    issue: 'Security services increased 11.2% year-over-year, exceeding the 5% controllable expense cap under Section 7.2 by $1,490.',
+    variance: 1490, clauseRef: '7.2 — Annual Cap on Controllable Expenses',
+    recommendation: 'Request itemized vendor invoice to confirm whether a scope change (e.g., added patrol hours) justifies a cap carve-out, or apply the cap and request a credit.',
+    status: 'open',
+  },
+  {
+    id: 'e4', rowId: 'r11', category: 'Signage & Lighting Repairs', severity: 'medium',
+    issue: 'This $6,300 charge does not match any standard CAM category in the lease abstract, and no governing clause could be located.',
+    variance: 6300, clauseRef: 'No clause matched',
+    recommendation: 'Request supporting documentation and an itemized description from the landlord to classify this charge before it can be validated.',
+    status: 'open',
+  },
+];
+
+// ---------- COMMENTS ----------
+const comments = [
+  {
+    author: 'D. Okafor', role: 'Auditor', initials: 'DO', color: '#3c5276',
+    time: 'Today, 9:22 AM',
+    html: 'Started review on Management Fee and Parking Lot Repairs — both look like clear cap violations. Flagging for <span class="mention">@Maya Kessler</span> ahead of the review call.',
+  },
+  {
+    author: 'Maya Kessler', role: 'Reviewer', initials: 'MK', color: '#0e7c7b',
+    time: 'Today, 10:05 AM',
+    html: 'Agreed on Management Fee — that\u2019s a clean exclusion per <span class="ref-chip">§7.3</span>. On Parking Lot Repairs, can we confirm with the landlord whether this was treated as capital in prior years too?',
+    attachment: 'Prior_Year_CAM_Reconciliation_2024.pdf',
+  },
+  {
+    author: 'D. Okafor', role: 'Auditor', initials: 'DO', color: '#3c5276',
+    time: 'Today, 11:02 AM',
+    html: 'Checked Security Services invoice — the increase lines up with a rate change in July, not added scope. Leaning toward enforcing the cap unless vendor contract says otherwise.',
+  },
+];
+
+// ---------- APPROVAL TIMELINE ----------
+const timeline = [
+  { title: 'Draft created', sub: 'D. Okafor · 3 days ago', state: 'done' },
+  { title: 'Submitted for review', sub: 'D. Okafor · Today, 9:30 AM', state: 'done' },
+  { title: 'Reviewer approval', sub: 'Maya Kessler · pending — 4 open exceptions', state: 'current' },
+  { title: 'Manager approval', sub: 'Not yet started', state: 'pending' },
+  { title: 'Audit closed', sub: 'Not yet started', state: 'pending' },
+];
+
+// ============================================================
+// RENDERING
+// ============================================================
+
+function confidenceBand(c) {
+  if (c >= 0.85) return 'high';
+  if (c >= 0.65) return 'med';
+  return 'low';
+}
+
+function renderClauses() {
+  const list = document.getElementById('clauseList');
+  list.innerHTML = clauses.map(c => `
+    <div class="clause-card" data-clause-id="${c.id}" tabindex="0" role="button" aria-label="View clause ${c.title}">
+      <div class="clause-card-top">
+        <span class="clause-card-title">${c.title}</span>
+        <span class="confidence-chip ${confidenceBand(c.confidence)}">${Math.round(c.confidence*100)}%</span>
+      </div>
+      <div class="clause-card-text">${c.text}</div>
+      <div class="clause-card-meta">
+        <span>Page ${c.page}</span>
+        <span>Source: Lease PDF</span>
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.clause-card').forEach(card => {
+    card.addEventListener('click', () => selectClause(card.dataset.clauseId));
+    card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectClause(card.dataset.clauseId); } });
+  });
+}
+
+function selectClause(id) {
+  document.querySelectorAll('.clause-card').forEach(c => c.classList.toggle('active', c.dataset.clauseId === id));
+  // Only clause c2 exists in the visible mock PDF page — highlight it, otherwise just flash the page
+  const hl = document.getElementById('hl-clause-2');
+  const page = document.getElementById('docPage1');
+  if (id === 'c2' && hl) {
+    hl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    hl.style.background = '#ffd34d';
+    setTimeout(() => { hl.style.background = '#ffe49a'; }, 700);
+  } else {
+    page.style.boxShadow = '0 0 0 3px #0e7c7b, 0 6px 20px rgba(0,0,0,0.35)';
+    showToast(`Jumped to source page for "${clauses.find(c=>c.id===id).title}"`);
+    setTimeout(() => { page.style.boxShadow = '0 6px 20px rgba(0,0,0,0.35)'; }, 900);
+  }
+}
+
+function computeSummary() {
+  const totalCurrent = camRows.reduce((s, r) => s + r.current, 0);
+  const totalAllowed = camRows.reduce((s, r) => s + (r.allowed ?? r.current), 0);
+  const totalVariance = totalCurrent - totalAllowed;
+  const exCount = exceptions.length;
+  const highSev = exceptions.filter(e => e.severity === 'high').length;
+  const resolved = exceptions.filter(e => e.status !== 'open').length;
+  const completion = Math.round((resolved / exceptions.length) * 40 + 35); // mock progress metric
+
+  return { totalCurrent, totalAllowed, totalVariance, exCount, highSev, completion };
+}
+
+function renderSummary() {
+  const s = computeSummary();
+  const grid = document.getElementById('summaryCards');
+  grid.innerHTML = `
+    <div class="scard tone-teal">
+      <span class="scard-label">Total Current CAM</span>
+      <span class="scard-value">${fmt(s.totalCurrent)}</span>
+      <span class="scard-sub">11 expense categories</span>
+    </div>
+    <div class="scard tone-green">
+      <span class="scard-label">Total Allowable CAM</span>
+      <span class="scard-value tone-green">${fmt(s.totalAllowed)}</span>
+      <span class="scard-sub">Per lease cap rules</span>
+    </div>
+    <div class="scard tone-red">
+      <span class="scard-label">Total Variance</span>
+      <span class="scard-value tone-red">${fmt(s.totalVariance)}</span>
+      <span class="scard-sub">Over allowable amount</span>
+    </div>
+    <div class="scard tone-amber">
+      <span class="scard-label">Exceptions</span>
+      <span class="scard-value tone-amber">${s.exCount}</span>
+      <span class="scard-sub">${exceptions.filter(e=>e.status==='open').length} open · ${exceptions.filter(e=>e.status!=='open').length} resolved</span>
+    </div>
+    <div class="scard tone-red">
+      <span class="scard-label">High Severity</span>
+      <span class="scard-value tone-red">${s.highSev}</span>
+      <span class="scard-sub">Require resolution to advance</span>
+    </div>
+    <div class="scard tone-teal">
+      <span class="scard-label">Audit Completion</span>
+      <span class="scard-value">${s.completion}%</span>
+      <div class="scard-progress"><div class="scard-progress-fill" style="width:${s.completion}%;"></div></div>
+    </div>
+  `;
+}
+
+function statusBadge(status) {
+  const map = {
+    pass: { label: 'Pass', icon: '<path d="M20 6L9 17l-5-5"/>' },
+    warn: { label: 'Warning', icon: '<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/>' },
+    fail: { label: 'Fail', icon: '<path d="M18 6L6 18M6 6l12 12"/>' },
+  };
+  const m = map[status];
+  return `<span class="badge ${status}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">${m.icon}</svg>${m.label}</span>`;
+}
+
+let expandedRowId = null;
+
+function renderCamGrid(filterText = '', filterStatus = 'all') {
+  const tbody = document.getElementById('camTableBody');
+  const filtered = camRows.filter(r => {
+    const matchesText = r.category.toLowerCase().includes(filterText.toLowerCase());
+    const matchesStatus = filterStatus === 'all' || r.status === filterStatus;
+    return matchesText && matchesStatus;
+  });
+
+  document.getElementById('camRowCount').textContent = filtered.length;
+
+  tbody.innerHTML = filtered.map(r => {
+    const clause = clauses.find(c => c.id === r.clauseId);
+    const variance = (r.allowed != null) ? (r.current - r.allowed) : null;
+    let varianceHtml = '<span class="variance-zero">—</span>';
+    if (variance != null) {
+      if (variance > 0) varianceHtml = `<span class="variance-pos">+${fmt(variance)}</span>`;
+      else if (variance < 0) varianceHtml = `<span class="variance-neg">${fmt(variance)}</span>`;
+      else varianceHtml = `<span class="variance-zero">$0</span>`;
+    }
+
+    const rowMain = `
+      <tr class="row-main ${r.status} ${expandedRowId === r.id ? 'expanded' : ''}" data-row-id="${r.id}">
+        <td><span class="expand-toggle"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg></span></td>
+        <td><div class="cat-cell"><span class="cat-name">${r.category}</span></div></td>
+        <td class="num">${fmt(r.current)}</td>
+        <td class="num">${r.prior != null ? fmt(r.prior) : '<span class="variance-zero">—</span>'}</td>
+        <td>${clause ? `<span class="clause-link" data-clause-id="${clause.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>${clause.title.split('—')[0].trim()}</span>` : '<span class="variance-zero">Unmapped</span>'}</td>
+        <td>${r.capType}</td>
+        <td class="num">${r.capValue != null ? fmt(r.capValue) : '<span class="variance-zero">—</span>'}</td>
+        <td class="num">${r.allowed != null ? fmt(r.allowed) : '<span class="variance-zero">—</span>'}</td>
+        <td class="num"><div class="variance-cell">${varianceHtml}</div></td>
+        <td>${statusBadge(r.status)}</td>
+        <td><span class="comment-stub ${r.comment ? '' : 'empty'}">${r.comment || 'Add comment…'}</span></td>
+      </tr>
+    `;
+
+    let detailRow = '';
+    if (expandedRowId === r.id) {
+      detailRow = `
+      <tr class="row-detail">
+        <td colspan="11">
+          <div class="detail-inner">
+            <div class="detail-block">
+              <h4>Calculation Steps</h4>
+              <div class="calc-steps">
+                ${r.steps.map(s => `<div class="calc-step"><span class="label">${s.label}</span><span class="val">${s.val}</span></div>`).join('')}
+              </div>
+            </div>
+            <div class="detail-block">
+              <h4>Referenced Lease Clause</h4>
+              ${clause ? `
+                <div class="source-line">
+                  ${clause.text}
+                  <div><a class="clause-link" data-clause-id="${clause.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>View in lease — page ${clause.page}</a></div>
+                </div>
+              ` : `<div class="source-line">No governing clause has been matched to this category. Flagged by the Validation Engine as a Missing Lease Clause exception.</div>`}
+            </div>
+            <div class="detail-block">
+              <h4>Source Statement Line</h4>
+              <div class="source-line">${r.source}</div>
+            </div>
+            <div class="detail-block">
+              <h4>Review History</h4>
+              <div class="history-list">
+                ${r.history.map(h => `
+                  <div class="history-item action-${h.type === 'fail' ? 'fail' : (h.type === 'pass' ? 'pass' : '')}">
+                    <span class="history-dot"></span>
+                    <div class="history-text">${h.text}<br><span class="history-time">${h.time}</span></div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            <div class="row-comment-box">
+              <div class="avatar" style="background:#3c5276; width:26px; height:26px; font-size:10px;">DO</div>
+              <textarea placeholder="Add a comment on ${r.category}…">${r.comment}</textarea>
+            </div>
+          </div>
+        </td>
+      </tr>
+      `;
+    }
+
+    return rowMain + detailRow;
+  }).join('');
+
+  // Row expand/collapse
+  tbody.querySelectorAll('.row-main').forEach(row => {
+    row.addEventListener('click', (e) => {
+      if (e.target.closest('.clause-link')) return;
+      const id = row.dataset.rowId;
+      expandedRowId = expandedRowId === id ? null : id;
+      renderCamGrid(document.getElementById('camFilterInput').value, currentStatusFilter);
+    });
+  });
+
+  // Clause links jump to left panel
+  tbody.querySelectorAll('.clause-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectClause(link.dataset.clauseId);
+    });
+  });
+}
+
+let currentStatusFilter = 'all';
+const statusCycle = ['all', 'fail', 'warn', 'pass'];
+const statusLabels = { all: 'All statuses', fail: 'Fail only', warn: 'Warning only', pass: 'Pass only' };
+
+function renderExceptions() {
+  const list = document.getElementById('exceptionsList');
+  document.getElementById('exceptionCount').textContent = exceptions.filter(e => e.status === 'open').length;
+
+  list.innerHTML = exceptions.map(ex => `
+    <div class="exception-card" data-ex-id="${ex.id}">
+      <div class="severity-tag ${ex.severity}"></div>
+      <div class="exception-main">
+        <div class="exception-top">
+          <span class="exception-cat">${ex.category}</span>
+          <span class="sev-chip ${ex.severity}">${ex.severity}</span>
+        </div>
+        <div class="exception-issue">${ex.issue}</div>
+        <div class="exception-meta">
+          <span class="meta-item">Variance <strong>${fmt(ex.variance)}</strong></span>
+          <span class="meta-item">Clause <strong style="font-family:inherit; font-weight:600;">${ex.clauseRef}</strong></span>
+        </div>
+        <div class="recommendation"><strong>Recommended action —</strong> ${ex.recommendation}</div>
+      </div>
+      <div class="exception-actions">
+        ${ex.status === 'open' ? `
+          <button class="ex-btn accept" data-action="accept" data-ex-id="${ex.id}">Accept</button>
+          <button class="ex-btn override" data-action="override" data-ex-id="${ex.id}">Override</button>
+          <button class="ex-btn reject" data-action="reject" data-ex-id="${ex.id}">Reject</button>
+        ` : `<button class="ex-btn resolved" disabled>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+          ${ex.status === 'accept' ? 'Accepted' : ex.status === 'override' ? 'Overridden' : 'Rejected'}
+        </button>`}
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.ex-btn[data-action]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ex = exceptions.find(e => e.id === btn.dataset.exId);
+      ex.status = btn.dataset.action;
+      renderExceptions();
+      renderSummary();
+      const verbMap = { accept: 'accepted', override: 'overridden', reject: 'rejected' };
+      showToast(`Exception ${verbMap[ex.status]} — ${ex.category}`);
+    });
+  });
+}
+
+function renderComments() {
+  const list = document.getElementById('commentsList');
+  document.getElementById('commentCount').textContent = comments.length;
+  list.innerHTML = comments.map(c => `
+    <div class="comment-item">
+      <div class="avatar" style="background:${c.color};">${c.initials}</div>
+      <div class="comment-body">
+        <div class="comment-head">
+          <span class="comment-author">${c.author}</span>
+          <span class="role-chip">${c.role}</span>
+          <span class="comment-time">${c.time}</span>
+        </div>
+        <div class="comment-text">${c.html}</div>
+        ${c.attachment ? `
+          <div class="comment-attachment">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+            ${c.attachment}
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderTimeline() {
+  const el = document.getElementById('approvalTimeline');
+  el.innerHTML = timeline.map(t => `
+    <div class="timeline-item">
+      <div class="timeline-marker ${t.state}">
+        ${t.state === 'done' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>' : ''}
+        ${t.state === 'current' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="3"/></svg>' : ''}
+      </div>
+      <div class="timeline-content">
+        <div class="timeline-title">${t.title}</div>
+        <div class="timeline-sub">${t.sub}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// INTERACTIONS
+// ============================================================
+
+function showToast(text) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toastText').textContent = text;
+  toast.classList.add('show');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+}
+
+function initHeaderActions() {
+  document.getElementById('btnSave').addEventListener('click', () => {
+    showToast('Audit saved');
+    document.getElementById('autosaveText').textContent = 'Saved just now';
+  });
+  document.getElementById('btnRefresh').addEventListener('click', () => {
+    showToast('Recalculating CAM values…');
+    setTimeout(() => showToast('Calculations refreshed'), 700);
+  });
+  document.getElementById('btnApprove').addEventListener('click', () => {
+    const openCount = exceptions.filter(e => e.status === 'open').length;
+    if (openCount > 0) {
+      showToast(`Cannot approve — ${openCount} open exception${openCount === 1 ? '' : 's'} remain`);
+    } else {
+      showToast('Audit approved');
+    }
+  });
+  document.getElementById('btnReject').addEventListener('click', () => showToast('Audit returned for rework'));
+  document.getElementById('btnExport').addEventListener('click', () => showToast('Generating audit report (PDF + Excel)…'));
+  document.getElementById('btnExit').addEventListener('click', () => showToast('Returning to Dashboard'));
+}
+
+function initLeftPanelTabs() {
+  document.querySelectorAll('.pl-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.pl-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      showToast(`Loaded: ${tab.textContent}`);
+    });
+  });
+}
+
+function initCamFilters() {
+  const input = document.getElementById('camFilterInput');
+  input.addEventListener('input', () => renderCamGrid(input.value, currentStatusFilter));
+
+  const statusBtn = document.getElementById('camStatusFilter');
+  statusBtn.addEventListener('click', () => {
+    const idx = statusCycle.indexOf(currentStatusFilter);
+    currentStatusFilter = statusCycle[(idx + 1) % statusCycle.length];
+    statusBtn.lastChild.textContent = ' ' + statusLabels[currentStatusFilter];
+    renderCamGrid(input.value, currentStatusFilter);
+  });
+}
+
+function initCommentCompose() {
+  document.getElementById('btnPostComment').addEventListener('click', () => {
+    const textarea = document.getElementById('newCommentText');
+    const text = textarea.value.trim();
+    if (!text) { textarea.focus(); return; }
+    comments.push({
+      author: 'D. Okafor', role: 'Auditor', initials: 'DO', color: '#3c5276',
+      time: 'Just now',
+      html: text.replace(/@(\w[\w\s]*)/g, '<span class="mention">@$1</span>'),
+    });
+    textarea.value = '';
+    renderComments();
+    showToast('Comment posted');
+  });
+  document.getElementById('btnMention').addEventListener('click', () => {
+    const textarea = document.getElementById('newCommentText');
+    textarea.value += (textarea.value && !textarea.value.endsWith(' ') ? ' ' : '') + '@';
+    textarea.focus();
+  });
+  document.getElementById('btnAttach').addEventListener('click', () => showToast('Attachment picker would open here'));
+}
+
+function initApprovalButtons() {
+  document.querySelectorAll('.approval-actions .btn').forEach(btn => {
+    btn.addEventListener('click', () => showToast(`${btn.textContent.trim()} recorded for Maya Kessler`));
+  });
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  renderSummary();
+  renderClauses();
+  renderCamGrid();
+  renderExceptions();
+  renderComments();
+  renderTimeline();
+
+  initHeaderActions();
+  initLeftPanelTabs();
+  initCamFilters();
+  initCommentCompose();
+  initApprovalButtons();
+
+  // Subtle autosave simulation per spec (autosave every 30s)
+  let seconds = 0;
+  setInterval(() => {
+    seconds += 30;
+    document.getElementById('autosaveText').textContent = 'Autosaved';
+    setTimeout(() => { document.getElementById('autosaveText').textContent = `Saved ${Math.floor(seconds/60) || 0} min ago`; }, 1200);
+  }, 30000);
+});
+
+</script>
+</body>
+</html>

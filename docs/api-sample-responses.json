@@ -1,0 +1,1246 @@
+{
+  "_meta": {
+    "title": "CAM Reconciliation API — Sample JSON Responses",
+    "version": "1.0.0",
+    "base_url": "http://localhost:8000",
+    "notes": [
+      "Placeholder UUIDs and amounts are illustrative.",
+      "Field names match FastAPI/Pydantic JSON serialization (aliases such as \"Lease Page\" appear as Lease_Page or lease_page in responses).",
+      "Excel export endpoints return binary (.xlsx), not JSON — see those entries for Content-Type and filename headers only.",
+      "Audit data is stored in memory; IDs are valid only until the server restarts."
+    ],
+    "shared": {
+      "audit_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "job_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      "pdfCoordinates": {
+        "page": 6,
+        "page_width": 612.0,
+        "page_height": 792.0,
+        "x0": 72.0,
+        "y0": 340.5,
+        "x1": 540.0,
+        "y1": 355.2
+      },
+      "timestamp": "2026-07-03T05:30:00.000000Z"
+    }
+  },
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/",
+      "description": "API root — service info",
+      "sample_response": {
+        "name": "CAM Reconciliation API",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "sample_frontend": "/sample.html"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/health",
+      "description": "Health check",
+      "sample_response": {
+        "status": "ok",
+        "openai_configured": true
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audits/health",
+      "description": "Health check (audits router alias)",
+      "sample_response": {
+        "status": "ok",
+        "openai_configured": true
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/jobs",
+      "description": "Upload lease + CAM PDFs; queue background extraction job",
+      "request": "multipart/form-data: lease_pdf (file), cam_pdf (file)",
+      "sample_response": {
+        "job_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+        "status": "pending",
+        "message": "Job queued for processing"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/jobs",
+      "description": "List all jobs",
+      "sample_response": [
+        {
+          "job_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+          "status": "completed",
+          "audit_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "lease_filename": "Sample_Lease.pdf",
+          "cam_filename": "Sample_CAM_Statement.pdf",
+          "error": null,
+          "created_at": "2026-07-03T05:28:00.000000Z",
+          "updated_at": "2026-07-03T05:30:12.000000Z"
+        },
+        {
+          "job_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "status": "running",
+          "audit_id": null,
+          "lease_filename": "Lease_v2.pdf",
+          "cam_filename": "CAM_2025.pdf",
+          "error": null,
+          "created_at": "2026-07-03T05:31:00.000000Z",
+          "updated_at": "2026-07-03T05:31:05.000000Z"
+        },
+        {
+          "job_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+          "status": "failed",
+          "audit_id": null,
+          "lease_filename": "bad_lease.pdf",
+          "cam_filename": "bad_cam.pdf",
+          "error": "Document extraction failed: invalid PDF",
+          "created_at": "2026-07-03T04:00:00.000000Z",
+          "updated_at": "2026-07-03T04:00:45.000000Z"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/jobs/{job_id}",
+      "description": "Get a single job by ID",
+      "sample_response": {
+        "job_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+        "status": "completed",
+        "audit_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "lease_filename": "Sample_Lease.pdf",
+        "cam_filename": "Sample_CAM_Statement.pdf",
+        "error": null,
+        "created_at": "2026-07-03T05:28:00.000000Z",
+        "updated_at": "2026-07-03T05:30:12.000000Z"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/audits/extract",
+      "description": "Synchronous extract — upload lease + CAM PDFs, create audit",
+      "request": "multipart/form-data: lease_pdf (file), cam_pdf (file)",
+      "sample_response": {
+        "audit_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "status": "draft",
+        "key_metrics": [
+          {
+            "field": "YEAR OF EXPENSES CONSIDERED",
+            "category": "N/A",
+            "value": 2025.0,
+            "page_number": 1
+          },
+          {
+            "field": "TENANT'S PRORATA SHARE %",
+            "category": "CAM",
+            "value": 12.5,
+            "page_number": 1
+          },
+          {
+            "field": "CAP ON CAM %",
+            "category": "CAM",
+            "value": 5.0,
+            "page_number": 1
+          }
+        ],
+        "cam_line_items": [
+          {
+            "Category": "CLEANING",
+            "Amount": 6000.0,
+            "value": "$6,000.00",
+            "page_number": 2,
+            "pdfCoordinates": {
+              "page": 2,
+              "page_width": 612.0,
+              "page_height": 792.0,
+              "x0": 72.0,
+              "y0": 410.0,
+              "x1": 540.0,
+              "y1": 422.0
+            },
+            "Lease_Page": 6,
+            "lease_clause_name": "Janitorial services",
+            "lease_classification": "Included",
+            "comparison_status": "Permitted",
+            "clause_pdfCoordinates": {
+              "page": 6,
+              "page_width": 612.0,
+              "page_height": 792.0,
+              "x0": 72.0,
+              "y0": 340.5,
+              "x1": 540.0,
+              "y1": 355.2
+            },
+            "Included_in_Cap": true
+          },
+          {
+            "Category": "UTILITIES",
+            "Amount": 82735.26,
+            "value": "$82,735.26",
+            "page_number": 2,
+            "pdfCoordinates": null,
+            "Lease_Page": 7,
+            "lease_clause_name": "Utility costs",
+            "lease_classification": "Included",
+            "comparison_status": "Permitted",
+            "clause_pdfCoordinates": {
+              "page": 7,
+              "page_width": 612.0,
+              "page_height": 792.0,
+              "x0": 72.0,
+              "y0": 180.0,
+              "x1": 540.0,
+              "y1": 210.0
+            },
+            "Included_in_Cap": false
+          }
+        ],
+        "lease_operating_costs": {
+          "included_costs": [
+            {
+              "name": "Janitorial services",
+              "value": "Tenant's pro-rata share of janitorial and cleaning expenses",
+              "page_number": 6,
+              "reason": null,
+              "pdfCoordinates": {
+                "page": 6,
+                "page_width": 612.0,
+                "page_height": 792.0,
+                "x0": 72.0,
+                "y0": 340.5,
+                "x1": 540.0,
+                "y1": 355.2
+              }
+            }
+          ],
+          "excluded_costs": [
+            {
+              "name": "Capital improvements",
+              "value": "Costs of capital improvements are excluded",
+              "page_number": 8,
+              "reason": "Explicitly excluded in lease Section 4.2",
+              "pdfCoordinates": {
+                "page": 8,
+                "page_width": 612.0,
+                "page_height": 792.0,
+                "x0": 72.0,
+                "y0": 520.0,
+                "x1": 540.0,
+                "y1": 548.0
+              }
+            }
+          ]
+        },
+        "clauses": [
+          {
+            "id": "clause-included-0",
+            "title": "Janitorial services",
+            "text": "Tenant's pro-rata share of janitorial and cleaning expenses",
+            "page": 6,
+            "confidence": 0.85,
+            "source": "Lease PDF"
+          }
+        ],
+        "metrics": {
+          "cam_prorata_pct": 12.5,
+          "tax_prorata_pct": 12.5,
+          "insurance_prorata_pct": 12.5,
+          "cap_on_cam_pct": 5.0,
+          "previous_year_capped_cam_total": 45000.0,
+          "tax_total_expense": 64500.0,
+          "insurance_total_expense": 22300.0,
+          "cam_prior_billed": 10000.0,
+          "tax_prior_billed": 8000.0,
+          "insurance_prior_billed": 2500.0,
+          "cam_stated_balance_due": 500.0,
+          "tax_stated_balance_due": 200.0,
+          "insurance_stated_balance_due": 100.0
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audits/{audit_id}",
+      "description": "Full audit state (extract + calculated worksheets if recalculated)",
+      "sample_response": {
+        "audit_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "status": "draft",
+        "created_at": "2026-07-03T05:30:00.000000Z",
+        "updated_at": "2026-07-03T05:32:00.000000Z",
+        "key_metrics": [
+          {
+            "field": "TENANT'S PRORATA SHARE %",
+            "category": "CAM",
+            "value": 12.5,
+            "page_number": 1
+          }
+        ],
+        "cam_line_items": [
+          {
+            "Category": "CLEANING",
+            "Amount": 6000.0,
+            "value": "$6,000.00",
+            "page_number": 2,
+            "pdfCoordinates": {
+              "page": 2,
+              "page_width": 612.0,
+              "page_height": 792.0,
+              "x0": 72.0,
+              "y0": 410.0,
+              "x1": 540.0,
+              "y1": 422.0
+            },
+            "Lease_Page": 6,
+            "lease_clause_name": "Janitorial services",
+            "lease_classification": "Included",
+            "comparison_status": "Permitted",
+            "clause_pdfCoordinates": {
+              "page": 6,
+              "page_width": 612.0,
+              "page_height": 792.0,
+              "x0": 72.0,
+              "y0": 340.5,
+              "x1": 540.0,
+              "y1": 355.2
+            },
+            "Included_in_Cap": true
+          }
+        ],
+        "lease_operating_costs": {
+          "included_costs": [
+            {
+              "name": "Janitorial services",
+              "value": "Tenant's pro-rata share of janitorial and cleaning expenses",
+              "page_number": 6,
+              "reason": null,
+              "pdfCoordinates": {
+                "page": 6,
+                "page_width": 612.0,
+                "page_height": 792.0,
+                "x0": 72.0,
+                "y0": 340.5,
+                "x1": 540.0,
+                "y1": 355.2
+              }
+            }
+          ],
+          "excluded_costs": []
+        },
+        "clauses": [
+          {
+            "id": "clause-included-0",
+            "title": "Janitorial services",
+            "text": "Tenant's pro-rata share of janitorial and cleaning expenses",
+            "page": 6,
+            "confidence": 0.85,
+            "source": "Lease PDF"
+          }
+        ],
+        "metrics": {
+          "cam_prorata_pct": 12.5,
+          "tax_prorata_pct": 12.5,
+          "insurance_prorata_pct": 12.5,
+          "cap_on_cam_pct": 5.0,
+          "previous_year_capped_cam_total": 45000.0,
+          "tax_total_expense": 64500.0,
+          "insurance_total_expense": 22300.0,
+          "cam_prior_billed": 10000.0,
+          "tax_prior_billed": 8000.0,
+          "insurance_prior_billed": 2500.0,
+          "cam_stated_balance_due": 500.0,
+          "tax_stated_balance_due": 200.0,
+          "insurance_stated_balance_due": 100.0
+        },
+        "audit_control_metrics": [
+          { "Metric": "CAM Pro-Rata (%)", "Value": 12.5 },
+          { "Metric": "TAX Pro-Rata (%)", "Value": 12.5 },
+          { "Metric": "INSURANCE Pro-Rata (%)", "Value": 12.5 },
+          { "Metric": "Cap on CAM (%)", "Value": 5.0 },
+          { "Metric": "Previous Year Capped CAM Total", "Value": 45000.0 },
+          { "Metric": "TAX Total Expense", "Value": 64500.0 },
+          { "Metric": "INSURANCE Total Expense", "Value": 22300.0 },
+          { "Metric": "CAM Prior Billed", "Value": 10000.0 },
+          { "Metric": "TAX Prior Billed", "Value": 8000.0 },
+          { "Metric": "INSURANCE Prior Billed", "Value": 2500.0 },
+          { "Metric": "CAM Stated Balance Due", "Value": 500.0 },
+          { "Metric": "TAX Stated Balance Due", "Value": 200.0 },
+          { "Metric": "INSURANCE Stated Balance Due", "Value": 100.0 }
+        ],
+        "unified_audit_grid": [
+          {
+            "Type": "Line Item",
+            "Description": "CLEANING",
+            "current_yr_charge": 6000.0,
+            "prior_yr_amount": 5400.0,
+            "cap_value": 5670.0,
+            "Variance": 330.0,
+            "prorata_pct": 12.5,
+            "tenant_share": 708.75,
+            "lease_page": 6,
+            "clause_pdfCoordinates": {
+              "page": 6,
+              "page_width": 612.0,
+              "page_height": 792.0,
+              "x0": 72.0,
+              "y0": 340.5,
+              "x1": 540.0,
+              "y1": 355.2
+            }
+          }
+        ],
+        "summary": [
+          {
+            "category": "CAM - Capped",
+            "actual_property_exp": 6000.0,
+            "recoverable_exp_allowed": 5670.0,
+            "prorata_pct": 12.5,
+            "tenant_share": 708.75,
+            "prior_billed_escrow": 10000.0,
+            "calculated_balance": -9291.25,
+            "stated_balance_due": 500.0,
+            "variance": -9791.25
+          }
+        ],
+        "unified_grid": [],
+        "cam_grid": [
+          {
+            "id": "cam-0",
+            "category": "CLEANING",
+            "current": 6000.0,
+            "prior": 5400.0,
+            "clause_id": "clause-included-0",
+            "cap_type": "Annual Increase Cap",
+            "cap_value": 5670.0,
+            "allowed": 5670.0,
+            "status": "variance",
+            "comment": "",
+            "steps": [
+              { "label": "Prior Year Amount", "val": "$5,400.00" },
+              { "label": "Cap (5%)", "val": "$5,670.00" },
+              { "label": "Allowed", "val": "$5,670.00" }
+            ],
+            "source": "CAM Statement",
+            "history": []
+          }
+        ],
+        "exceptions": [
+          {
+            "id": "e-cam-0",
+            "row_id": "cam-0",
+            "category": "CLEANING",
+            "severity": "medium",
+            "issue": "Current charge ($6,000.00) exceeds capped allowable ($5,670.00) by $330.00.",
+            "variance": 330.0,
+            "clause_ref": "Janitorial services",
+            "recommendation": "Verify cap calculation and lease clause applicability.",
+            "status": "open"
+          }
+        ],
+        "summary_cards": {
+          "total_current_cam": 6000.0,
+          "total_allowable_cam": 5670.0,
+          "total_variance": 330.0,
+          "exception_count": 1,
+          "open_exception_count": 1,
+          "high_severity_count": 0,
+          "audit_completion_pct": 35
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/audits/{audit_id}/calculate",
+      "description": "Recalculate audit with edited line items and/or metrics",
+      "sample_request": {
+        "cam_line_items": [
+          {
+            "Category": "CLEANING",
+            "Amount": 6000.0,
+            "Included in Cap": true
+          }
+        ],
+        "metrics": {
+          "cam_prorata_pct": 12.5,
+          "tax_prorata_pct": 12.5,
+          "insurance_prorata_pct": 12.5,
+          "cap_on_cam_pct": 5.0,
+          "previous_year_capped_cam_total": 45000.0,
+          "tax_total_expense": 64500.0,
+          "insurance_total_expense": 22300.0,
+          "cam_prior_billed": 10000.0,
+          "tax_prior_billed": 8000.0,
+          "insurance_prior_billed": 2500.0,
+          "cam_stated_balance_due": 500.0,
+          "tax_stated_balance_due": 200.0,
+          "insurance_stated_balance_due": 100.0
+        }
+      },
+      "sample_response": {
+        "audit_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "cam_line_items": [
+          {
+            "Category": "CLEANING",
+            "Amount": 6000.0,
+            "value": "$6,000.00",
+            "page_number": 2,
+            "pdfCoordinates": null,
+            "Lease_Page": 6,
+            "lease_clause_name": "Janitorial services",
+            "lease_classification": "Included",
+            "comparison_status": "Permitted",
+            "clause_pdfCoordinates": {
+              "page": 6,
+              "page_width": 612.0,
+              "page_height": 792.0,
+              "x0": 72.0,
+              "y0": 340.5,
+              "x1": 540.0,
+              "y1": 355.2
+            },
+            "Included_in_Cap": true
+          }
+        ],
+        "audit_control_metrics": [
+          { "Metric": "CAM Pro-Rata (%)", "Value": 12.5 },
+          { "Metric": "Cap on CAM (%)", "Value": 5.0 }
+        ],
+        "unified_audit_grid": [
+          {
+            "Type": "Line Item",
+            "Description": "CLEANING",
+            "current_yr_charge": 6000.0,
+            "prior_yr_amount": 5400.0,
+            "cap_value": 5670.0,
+            "Variance": 330.0,
+            "prorata_pct": 12.5,
+            "tenant_share": 708.75,
+            "lease_page": 6,
+            "clause_pdfCoordinates": {
+              "page": 6,
+              "page_width": 612.0,
+              "page_height": 792.0,
+              "x0": 72.0,
+              "y0": 340.5,
+              "x1": 540.0,
+              "y1": 355.2
+            }
+          }
+        ],
+        "summary": [
+          {
+            "category": "CAM - Capped",
+            "actual_property_exp": 6000.0,
+            "recoverable_exp_allowed": 5670.0,
+            "prorata_pct": 12.5,
+            "tenant_share": 708.75,
+            "prior_billed_escrow": 10000.0,
+            "calculated_balance": -9291.25,
+            "stated_balance_due": 500.0,
+            "variance": -9791.25
+          }
+        ],
+        "exceptions": [
+          {
+            "id": "e-cam-0",
+            "row_id": "cam-0",
+            "category": "CLEANING",
+            "severity": "medium",
+            "issue": "Current charge ($6,000.00) exceeds capped allowable ($5,670.00) by $330.00.",
+            "variance": 330.0,
+            "clause_ref": "Janitorial services",
+            "recommendation": "Verify cap calculation and lease clause applicability.",
+            "status": "open"
+          }
+        ],
+        "summary_cards": {
+          "total_current_cam": 6000.0,
+          "total_allowable_cam": 5670.0,
+          "total_variance": 330.0,
+          "exception_count": 1,
+          "open_exception_count": 1,
+          "high_severity_count": 0,
+          "audit_completion_pct": 35
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audits/{audit_id}/workspace",
+      "description": "Audit payload shaped for sample.html workspace UI (camelCase keys)",
+      "sample_response": {
+        "auditId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "status": "draft",
+        "leaseFilename": "Sample_Lease.pdf",
+        "camFilename": "Sample_CAM_Statement.pdf",
+        "clauses": [
+          {
+            "id": "clause-included-0",
+            "title": "Janitorial services",
+            "text": "Tenant's pro-rata share of janitorial and cleaning expenses",
+            "page": 6,
+            "confidence": 0.85,
+            "source": "Lease PDF"
+          }
+        ],
+        "worksheets": {
+          "camLineItems": [
+            {
+              "Category": "CLEANING",
+              "Amount": 6000.0,
+              "Included in Cap": true,
+              "Lease Page": 6,
+              "clause_pdfCoordinates": {
+                "page": 6,
+                "page_width": 612.0,
+                "page_height": 792.0,
+                "x0": 72.0,
+                "y0": 340.5,
+                "x1": 540.0,
+                "y1": 355.2
+              }
+            }
+          ],
+          "auditControlMetrics": [
+            { "Metric": "CAM Pro-Rata (%)", "Value": 12.5 },
+            { "Metric": "Cap on CAM (%)", "Value": 5.0 }
+          ],
+          "unifiedAuditGrid": [
+            {
+              "Type": "Line Item",
+              "Description": "CLEANING",
+              "Current Yr Charge": 6000.0,
+              "Prior Yr Amount": 5400.0,
+              "Cap Value": 5670.0,
+              "Variance": 330.0,
+              "Pro-Rata (%)": 12.5,
+              "Tenant Share": 708.75,
+              "Lease Page": 6,
+              "clause_pdfCoordinates": {
+                "page": 6,
+                "page_width": 612.0,
+                "page_height": 792.0,
+                "x0": 72.0,
+                "y0": 340.5,
+                "x1": 540.0,
+                "y1": 355.2
+              }
+            }
+          ]
+        },
+        "exceptions": [
+          {
+            "id": "e-cam-0",
+            "rowId": "cam-0",
+            "category": "CLEANING",
+            "severity": "medium",
+            "issue": "Current charge ($6,000.00) exceeds capped allowable ($5,670.00) by $330.00.",
+            "variance": 330.0,
+            "clauseRef": "Janitorial services",
+            "recommendation": "Verify cap calculation and lease clause applicability.",
+            "status": "open"
+          }
+        ],
+        "summaryCards": {
+          "totalCurrentCam": 6000.0,
+          "totalAllowableCam": 5670.0,
+          "totalVariance": 330.0,
+          "exceptionCount": 1,
+          "openExceptionCount": 1,
+          "highSeverityCount": 0,
+          "auditCompletionPct": 35
+        },
+        "metrics": {
+          "cam_prorata_pct": 12.5,
+          "tax_prorata_pct": 12.5,
+          "insurance_prorata_pct": 12.5,
+          "cap_on_cam_pct": 5.0,
+          "previous_year_capped_cam_total": 45000.0,
+          "tax_total_expense": 64500.0,
+          "insurance_total_expense": 22300.0,
+          "cam_prior_billed": 10000.0,
+          "tax_prior_billed": 8000.0,
+          "insurance_prior_billed": 2500.0,
+          "cam_stated_balance_due": 500.0,
+          "tax_stated_balance_due": 200.0,
+          "insurance_stated_balance_due": 100.0
+        },
+        "summary": [
+          {
+            "category": "CAM - Capped",
+            "actual_property_exp": 6000.0,
+            "recoverable_exp_allowed": 5670.0,
+            "prorata_pct": 12.5,
+            "tenant_share": 708.75,
+            "prior_billed_escrow": 10000.0,
+            "calculated_balance": -9291.25,
+            "stated_balance_due": 500.0,
+            "variance": -9791.25
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audits/{audit_id}/export",
+      "description": "Download Unified CAM Audit Grid as Excel (binary response, not JSON)",
+      "sample_response": null,
+      "response_headers": {
+        "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "Content-Disposition": "attachment; filename=\"Unified_CAM_Audit_Grid_3fa85f64-5717-4562-b3fc-2c963f66afa6.xlsx\""
+      },
+      "response_body": "<binary .xlsx file>"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/audits/{audit_id}/status",
+      "description": "Update audit status (query param: status=draft|in_review|approved|rejected)",
+      "sample_request": "PATCH /api/v1/audits/{audit_id}/status?status=in_review",
+      "sample_response": {
+        "audit_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "status": "in_review"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audits/{audit_id}/widgets",
+      "description": "Six audit summary dashboard widgets (recalculates if needed)",
+      "sample_response": {
+        "audit_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "updated_at": "2026-07-03T05:32:00.000000Z",
+        "widgets": [
+          {
+            "key": "total_current_cam",
+            "label": "Total Current CAM",
+            "value": 269150.0,
+            "display_value": "$269,150",
+            "subtitle": "11 expense categories",
+            "tone": "teal",
+            "show_progress": false,
+            "progress_pct": null
+          },
+          {
+            "key": "total_allowable_cam",
+            "label": "Total Allowable CAM",
+            "value": 224075.0,
+            "display_value": "$224,075",
+            "subtitle": "Per lease cap rules",
+            "tone": "green",
+            "show_progress": false,
+            "progress_pct": null
+          },
+          {
+            "key": "total_variance",
+            "label": "Total Variance",
+            "value": 45075.0,
+            "display_value": "$45,075",
+            "subtitle": "Over allowable amount",
+            "tone": "red",
+            "show_progress": false,
+            "progress_pct": null
+          },
+          {
+            "key": "exceptions",
+            "label": "Exceptions",
+            "value": 4.0,
+            "display_value": "4",
+            "subtitle": "4 open · 0 resolved",
+            "tone": "amber",
+            "show_progress": false,
+            "progress_pct": null
+          },
+          {
+            "key": "high_severity",
+            "label": "High Severity",
+            "value": 2.0,
+            "display_value": "2",
+            "subtitle": "Require resolution to advance",
+            "tone": "red",
+            "show_progress": false,
+            "progress_pct": null
+          },
+          {
+            "key": "audit_completion",
+            "label": "Audit Completion",
+            "value": 35.0,
+            "display_value": "35%",
+            "subtitle": "Based on exception resolution",
+            "tone": "teal",
+            "show_progress": true,
+            "progress_pct": 35
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audits/{audit_id}/worksheets",
+      "description": "All three worksheet tabs in one response",
+      "sample_response": {
+        "audit_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "cam_line_items": [
+          {
+            "Category": "CLEANING",
+            "Amount": 6000.0,
+            "value": "$6,000.00",
+            "page_number": 2,
+            "pdfCoordinates": null,
+            "Lease_Page": 6,
+            "lease_clause_name": "Janitorial services",
+            "lease_classification": "Included",
+            "comparison_status": "Permitted",
+            "clause_pdfCoordinates": {
+              "page": 6,
+              "page_width": 612.0,
+              "page_height": 792.0,
+              "x0": 72.0,
+              "y0": 340.5,
+              "x1": 540.0,
+              "y1": 355.2
+            },
+            "Included_in_Cap": true
+          },
+          {
+            "Category": "UTILITIES",
+            "Amount": 82735.26,
+            "value": "$82,735.26",
+            "page_number": 2,
+            "pdfCoordinates": null,
+            "Lease_Page": 7,
+            "lease_clause_name": "Utility costs",
+            "lease_classification": "Included",
+            "comparison_status": "Permitted",
+            "clause_pdfCoordinates": {
+              "page": 7,
+              "page_width": 612.0,
+              "page_height": 792.0,
+              "x0": 72.0,
+              "y0": 180.0,
+              "x1": 540.0,
+              "y1": 210.0
+            },
+            "Included_in_Cap": false
+          }
+        ],
+        "audit_control_metrics": [
+          { "Metric": "CAM Pro-Rata (%)", "Value": 12.5 },
+          { "Metric": "TAX Pro-Rata (%)", "Value": 12.5 },
+          { "Metric": "INSURANCE Pro-Rata (%)", "Value": 12.5 },
+          { "Metric": "Cap on CAM (%)", "Value": 5.0 },
+          { "Metric": "Previous Year Capped CAM Total", "Value": 45000.0 },
+          { "Metric": "TAX Total Expense", "Value": 64500.0 },
+          { "Metric": "INSURANCE Total Expense", "Value": 22300.0 },
+          { "Metric": "CAM Prior Billed", "Value": 10000.0 },
+          { "Metric": "TAX Prior Billed", "Value": 8000.0 },
+          { "Metric": "INSURANCE Prior Billed", "Value": 2500.0 },
+          { "Metric": "CAM Stated Balance Due", "Value": 500.0 },
+          { "Metric": "TAX Stated Balance Due", "Value": 200.0 },
+          { "Metric": "INSURANCE Stated Balance Due", "Value": 100.0 }
+        ],
+        "unified_audit_grid": [
+          {
+            "Type": "Line Item",
+            "Description": "CLEANING",
+            "current_yr_charge": 6000.0,
+            "prior_yr_amount": 5400.0,
+            "cap_value": 5670.0,
+            "Variance": 330.0,
+            "prorata_pct": 12.5,
+            "tenant_share": 708.75,
+            "lease_page": 6,
+            "clause_pdfCoordinates": {
+              "page": 6,
+              "page_width": 612.0,
+              "page_height": 792.0,
+              "x0": 72.0,
+              "y0": 340.5,
+              "x1": 540.0,
+              "y1": 355.2
+            }
+          },
+          {
+            "Type": "Line Item",
+            "Description": "UTILITIES",
+            "current_yr_charge": 82735.26,
+            "prior_yr_amount": 74461.73,
+            "cap_value": 82735.26,
+            "Variance": 0.0,
+            "prorata_pct": 12.5,
+            "tenant_share": 10341.91,
+            "lease_page": 7,
+            "clause_pdfCoordinates": {
+              "page": 7,
+              "page_width": 612.0,
+              "page_height": 792.0,
+              "x0": 72.0,
+              "y0": 180.0,
+              "x1": 540.0,
+              "y1": 210.0
+            }
+          },
+          {
+            "Type": "",
+            "Description": "",
+            "current_yr_charge": null,
+            "prior_yr_amount": null,
+            "cap_value": null,
+            "Variance": null,
+            "prorata_pct": null,
+            "tenant_share": null,
+            "lease_page": null,
+            "clause_pdfCoordinates": null
+          },
+          {
+            "Type": "Consolidated Summary",
+            "Description": "CAM - Capped",
+            "current_yr_charge": 6000.0,
+            "prior_yr_amount": null,
+            "cap_value": 5670.0,
+            "Variance": -9791.25,
+            "prorata_pct": 12.5,
+            "tenant_share": 708.75,
+            "lease_page": null,
+            "clause_pdfCoordinates": null
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/audits/{audit_id}/worksheets",
+      "description": "Update tab 1 and/or tab 2; tab 3 recalculates automatically",
+      "sample_request": {
+        "cam_line_items": [
+          {
+            "Category": "CLEANING",
+            "Amount": 6000.0,
+            "Included in Cap": true
+          }
+        ],
+        "audit_control_metrics": [
+          { "Metric": "CAM Pro-Rata (%)", "Value": 12.5 }
+        ]
+      },
+      "sample_response": "<same shape as GET /api/v1/audits/{audit_id}/worksheets>"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/audits/{audit_id}/worksheets/cam-line-items",
+      "description": "Edit tab 1 (CAM Line Items Expense Ledger)",
+      "sample_request": {
+        "rows": [
+          {
+            "Category": "CLEANING",
+            "Amount": 6000.0,
+            "Included in Cap": true
+          },
+          {
+            "Category": "UTILITIES",
+            "Amount": 82735.26,
+            "Included in Cap": false
+          }
+        ]
+      },
+      "sample_response": "<same shape as GET /api/v1/audits/{audit_id}/worksheets>"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/audits/{audit_id}/worksheets/audit-control-metrics",
+      "description": "Edit tab 2 (Audit Control Metrics)",
+      "sample_request": {
+        "rows": [
+          { "Metric": "CAM Pro-Rata (%)", "Value": 12.5 },
+          { "Metric": "Cap on CAM (%)", "Value": 5.0 },
+          { "Metric": "Previous Year Capped CAM Total", "Value": 45000.0 }
+        ]
+      },
+      "sample_response": "<same shape as GET /api/v1/audits/{audit_id}/worksheets>"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audits/{audit_id}/worksheets/cam-line-items",
+      "description": "Tab 1: CAM Line Items Expense Ledger",
+      "sample_response": {
+        "audit_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "title": "CAM Line Items Expense Ledger",
+        "rows": [
+          {
+            "Category": "CLEANING",
+            "Amount": 6000.0,
+            "value": "$6,000.00",
+            "page_number": 2,
+            "pdfCoordinates": null,
+            "Lease_Page": 6,
+            "lease_clause_name": "Janitorial services",
+            "lease_classification": "Included",
+            "comparison_status": "Permitted",
+            "clause_pdfCoordinates": {
+              "page": 6,
+              "page_width": 612.0,
+              "page_height": 792.0,
+              "x0": 72.0,
+              "y0": 340.5,
+              "x1": 540.0,
+              "y1": 355.2
+            },
+            "Included_in_Cap": true
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audits/{audit_id}/worksheets/audit-control-metrics",
+      "description": "Tab 2: Audit Control Metrics",
+      "sample_response": {
+        "audit_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "title": "Audit Control Metrics",
+        "rows": [
+          { "Metric": "CAM Pro-Rata (%)", "Value": 12.5 },
+          { "Metric": "TAX Pro-Rata (%)", "Value": 12.5 },
+          { "Metric": "INSURANCE Pro-Rata (%)", "Value": 12.5 },
+          { "Metric": "Cap on CAM (%)", "Value": 5.0 },
+          { "Metric": "Previous Year Capped CAM Total", "Value": 45000.0 },
+          { "Metric": "TAX Total Expense", "Value": 64500.0 },
+          { "Metric": "INSURANCE Total Expense", "Value": 22300.0 },
+          { "Metric": "CAM Prior Billed", "Value": 10000.0 },
+          { "Metric": "TAX Prior Billed", "Value": 8000.0 },
+          { "Metric": "INSURANCE Prior Billed", "Value": 2500.0 },
+          { "Metric": "CAM Stated Balance Due", "Value": 500.0 },
+          { "Metric": "TAX Stated Balance Due", "Value": 200.0 },
+          { "Metric": "INSURANCE Stated Balance Due", "Value": 100.0 }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audits/{audit_id}/worksheets/unified-audit-grid",
+      "description": "Tab 3: Unified CAM Audit Grid (read-only calculated output)",
+      "sample_response": {
+        "audit_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "title": "Unified CAM Audit Grid",
+        "rows": [
+          {
+            "Type": "Line Item",
+            "Description": "CLEANING",
+            "current_yr_charge": 6000.0,
+            "prior_yr_amount": 5400.0,
+            "cap_value": 5670.0,
+            "Variance": 330.0,
+            "prorata_pct": 12.5,
+            "tenant_share": 708.75,
+            "lease_page": 6,
+            "clause_pdfCoordinates": {
+              "page": 6,
+              "page_width": 612.0,
+              "page_height": 792.0,
+              "x0": 72.0,
+              "y0": 340.5,
+              "x1": 540.0,
+              "y1": 355.2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audits/{audit_id}/worksheets/unified-audit-grid/export",
+      "description": "Export Unified CAM Audit Grid as Excel (binary response, not JSON)",
+      "sample_response": null,
+      "response_headers": {
+        "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "Content-Disposition": "attachment; filename=\"Unified_CAM_Audit_Grid_3fa85f64-5717-4562-b3fc-2c963f66afa6.xlsx\""
+      },
+      "response_body": "<binary .xlsx file>"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audits/{audit_id}/lease-operating-costs",
+      "description": "Lease included/excluded operating costs with pdfCoordinates",
+      "sample_response": {
+        "included_costs": [
+          {
+            "name": "Janitorial services",
+            "value": "Tenant's pro-rata share of janitorial and cleaning expenses",
+            "page_number": 6,
+            "reason": null,
+            "pdfCoordinates": {
+              "page": 6,
+              "page_width": 612.0,
+              "page_height": 792.0,
+              "x0": 72.0,
+              "y0": 340.5,
+              "x1": 540.0,
+              "y1": 355.2
+            }
+          },
+          {
+            "name": "Utility costs",
+            "value": "Electric, gas, water and sewer allocated to common areas",
+            "page_number": 7,
+            "reason": null,
+            "pdfCoordinates": {
+              "page": 7,
+              "page_width": 612.0,
+              "page_height": 792.0,
+              "x0": 72.0,
+              "y0": 180.0,
+              "x1": 540.0,
+              "y1": 210.0
+            }
+          }
+        ],
+        "excluded_costs": [
+          {
+            "name": "Capital improvements",
+            "value": "Costs of capital improvements are excluded",
+            "page_number": 8,
+            "reason": "Explicitly excluded in lease Section 4.2",
+            "pdfCoordinates": {
+              "page": 8,
+              "page_width": 612.0,
+              "page_height": 792.0,
+              "x0": 72.0,
+              "y0": 520.0,
+              "x1": 540.0,
+              "y1": 548.0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audits/{audit_id}/cam-line-items",
+      "description": "CAM table line items with pdfCoordinates (extract view, no lease comparison fields)",
+      "sample_response": [
+        {
+          "Category": "CLEANING",
+          "Amount": 6000.0,
+          "value": "$6,000.00",
+          "page_number": 2,
+          "pdfCoordinates": {
+            "page": 2,
+            "page_width": 612.0,
+            "page_height": 792.0,
+            "x0": 72.0,
+            "y0": 410.0,
+            "x1": 540.0,
+            "y1": 422.0
+          }
+        },
+        {
+          "Category": "UTILITIES",
+          "Amount": 82735.26,
+          "value": "$82,735.26",
+          "page_number": 2,
+          "pdfCoordinates": null
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/documents/lease/operating-costs",
+      "description": "Standalone lease PDF extraction — operating costs with coordinates",
+      "request": "multipart/form-data: lease_pdf (file)",
+      "sample_response": {
+        "included_costs": [
+          {
+            "name": "Janitorial services",
+            "value": "Tenant's pro-rata share of janitorial and cleaning expenses",
+            "page_number": 6,
+            "reason": null,
+            "pdfCoordinates": {
+              "page": 6,
+              "page_width": 612.0,
+              "page_height": 792.0,
+              "x0": 72.0,
+              "y0": 340.5,
+              "x1": 540.0,
+              "y1": 355.2
+            }
+          }
+        ],
+        "excluded_costs": [
+          {
+            "name": "Capital improvements",
+            "value": "Costs of capital improvements are excluded",
+            "page_number": 8,
+            "reason": "Explicitly excluded in lease Section 4.2",
+            "pdfCoordinates": {
+              "page": 8,
+              "page_width": 612.0,
+              "page_height": 792.0,
+              "x0": 72.0,
+              "y0": 520.0,
+              "x1": 540.0,
+              "y1": 548.0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/documents/cam/table",
+      "description": "Standalone CAM PDF extraction — line items with coordinates",
+      "request": "multipart/form-data: cam_pdf (file)",
+      "sample_response": [
+        {
+          "Category": "CLEANING",
+          "Amount": 6000.0,
+          "value": "$6,000.00",
+          "page_number": 2,
+          "pdfCoordinates": {
+            "page": 2,
+            "page_width": 612.0,
+            "page_height": 792.0,
+            "x0": 72.0,
+            "y0": 410.0,
+            "x1": 540.0,
+            "y1": 422.0
+          }
+        },
+        {
+          "Category": "UTILITIES",
+          "Amount": 82735.26,
+          "value": "$82,735.26",
+          "page_number": 2,
+          "pdfCoordinates": null
+        }
+      ]
+    }
+  ],
+  "error_samples": [
+    {
+      "status_code": 404,
+      "description": "Audit or job not found",
+      "sample_response": {
+        "detail": "Audit not found"
+      }
+    },
+    {
+      "status_code": 400,
+      "description": "Validation error (e.g. empty PDF upload)",
+      "sample_response": {
+        "detail": "Both PDF files must be non-empty"
+      }
+    },
+    {
+      "status_code": 503,
+      "description": "OpenAI API key not configured",
+      "sample_response": {
+        "detail": "OPENAI_API_KEY is not configured"
+      }
+    },
+    {
+      "status_code": 502,
+      "description": "Extraction failure",
+      "sample_response": {
+        "detail": "Document extraction failed: <error message>"
+      }
+    }
+  ]
+}
