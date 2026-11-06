@@ -342,7 +342,7 @@ def main():
     if not os.getenv("OPENAI_API_KEY"):
         raise ValueError("OPENAI_API_KEY missing")
 
-    lease_id = upload_pdf(LEASE_PDF_PATH)
+    lease_record_id = upload_pdf(LEASE_PDF_PATH)
     cam_id = upload_pdf(CAM_RECON_PDF_PATH)
 
     # Extract everything directly with GPT
@@ -351,6 +351,7 @@ def main():
     lease_costs = extract_lease_operating_costs(lease_id)
 
     comparison = None
+    isread= "fasle"
     if cam_table and lease_costs:
         comparison = compare_and_generate_json(cam_table, lease_costs)
 
